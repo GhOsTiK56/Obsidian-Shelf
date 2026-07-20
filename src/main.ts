@@ -1,11 +1,12 @@
 import { Plugin } from "obsidian";
+import { logger } from "./logger";
 
 export default class ObsidianShelf extends Plugin {
   async onload() {
-    // console.log("Obsidian Shelf loaded");
+    logger.info('Plugin Loaded')
   }
 
   onunload() {
-    // console.log("Obsidian Shelf unloaded");
+    logger.info('Plugin Unloaded')
   }
 }
