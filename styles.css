@@ -1,8 +1,12 @@
-/*
+.library-card {
+	border: 1px solid var(--background-modifier-border);
+	padding: 10px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.card_even_numbered {
+	color: aqua !important;
+}
 
-If your plugin does not need CSS, delete this file.
-
-*/
+.card_non_even_numbered {
+	color: blue;
+}

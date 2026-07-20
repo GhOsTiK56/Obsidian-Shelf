@@ -1,4 +1,5 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { logger } from './common/logger';
 
 export const VIEW_TYPE_LIBRARY = 'library-view';
 
@@ -25,17 +26,21 @@ export class LibraryView extends ItemView {
 		});
 
 		const card = container.createDiv({
+      text: 'Library',
 			cls: 'library-card',
 		});
 
-		card.createEl('h3', {
-			text: 'Interstellar',
-		});
+		for (let i = 0; i < 10; i++) {
+			card.createEl('p', {
+				text: `text: ${i}`,
+        cls: i % 2 == 0 ? 'card_even_numbered' : 'card_non_even_numbered'
+			});
+		}
 
-		card.createEl('p', {
-			text: 'Movie • 2014',
-		});
+		logger.info('ItemVew was opened');
 	}
 
-	async onClose() {}
+	async onClose() {
+		logger.info('ItemVew was closed');
+	}
 }

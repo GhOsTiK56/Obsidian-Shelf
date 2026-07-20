@@ -1,6 +1,6 @@
 import { Plugin } from 'obsidian';
 import { logger } from './common/logger';
-import { VIEW_TYPE_LIBRARY, LibraryView } from './view';
+import { VIEW_TYPE_LIBRARY, LibraryView } from './library_view';
 export default class ObsidianShelf extends Plugin {
 	async onload() {
 		this.registerView(VIEW_TYPE_LIBRARY, (leaf) => new LibraryView(leaf));
