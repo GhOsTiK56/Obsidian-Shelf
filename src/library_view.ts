@@ -1,10 +1,13 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
 import { logger } from './common/logger';
+import { MediaItem } from './media_item';
+import { BookItem } from './book_item';
+import { MarkdownLoader } from './markdown_loader';
 
 export const VIEW_TYPE_LIBRARY = 'library-view';
 
 export class LibraryView extends ItemView {
-	constructor(leaf: WorkspaceLeaf) {
+	public constructor(leaf: WorkspaceLeaf) {
 		super(leaf);
 	}
 
@@ -23,17 +26,28 @@ export class LibraryView extends ItemView {
 
 		container.createEl('h2', {
 			text: 'My library',
+			cls: 'library-title',
 		});
 
-		const card = container.createDiv({
-      text: 'Library',
-			cls: 'library-card',
+		const gridContainer = container.createDiv({
+			cls: 'media-cards-grid',
 		});
 
-		for (let i = 0; i < 10; i++) {
-			card.createEl('p', {
-				text: `text: ${i}`,
-        cls: i % 2 == 0 ? 'card_even_numbered' : 'card_non_even_numbered'
+		const loader = new MarkdownLoader(this.app);
+		const mediaData = loader.getParsedFiles();
+
+		const mediaList: MediaItem[] = mediaData.map((file) => {
+			return new BookItem(file);
+		});
+
+		for (const item of mediaList) {
+			const cardItem = gridContainer.createDiv({
+				cls: 'card-item',
+			});
+
+			cardItem.createEl('p', {
+				text: `${item.getFileInfo()}`,
+				cls: 'card-text',
 			});
 		}
 

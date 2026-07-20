@@ -1,12 +1,36 @@
-.library-card {
-	border: 1px solid var(--background-modifier-border);
+.library-title {
 	padding: 10px;
 }
 
-.card_even_numbered {
-	color: aqua !important;
+.media-cards-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+	gap: 16px;
+	padding: 10px;
 }
 
-.card_non_even_numbered {
-	color: blue;
+.card-item {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 12px;
+	padding: 12px;
+	background-color: bisque;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	box-sizing: border-box;
+	overflow-wrap: break-word;
+	word-break: break-all;
+}
+
+.card-item:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	border-color: var(--interactive-accent);
+
+}
+
+.card-text {
+	color: black;
+	white-space: pre-line;
+	margin: 0;
+	font-size: 1.01em;
 }
