@@ -9,7 +9,7 @@ export class MarkdownLoader {
 	}
 
 	public getParsedFiles() {
-		const targetFolders = ['Ведьмак', 'Дерьмак'];
+		const targetFolders = ['Ведьмак', 'Дерьмак', 'Anime'];
 
 		const files = this.app.vault
 			.getMarkdownFiles()

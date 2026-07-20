@@ -45,6 +45,13 @@ export class LibraryView extends ItemView {
 				cls: 'card-item',
 			});
 
+      if (item.poster) {
+        cardItem.createEl('img', {
+          cls: 'card-poster',
+          attr: { src: item.poster }
+        })
+      }
+
 			cardItem.createEl('p', {
 				text: `${item.getFileInfo()}`,
 				cls: 'card-text',
@@ -55,6 +62,7 @@ export class LibraryView extends ItemView {
 	}
 
 	async onClose() {
+    this.containerEl.empty();
 		logger.info('ItemVew was closed');
 	}
 }
