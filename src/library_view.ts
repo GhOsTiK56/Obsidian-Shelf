@@ -45,24 +45,28 @@ export class LibraryView extends ItemView {
 				cls: 'card-item',
 			});
 
-      if (item.poster) {
-        cardItem.createEl('img', {
-          cls: 'card-poster',
-          attr: { src: item.poster }
-        })
-      }
+			if (item.poster) {
+				cardItem.createEl('img', {
+					cls: 'card-poster',
+					attr: { src: item.poster, alt: item.getTitleName() },
+				});
+			}
 
-			cardItem.createEl('p', {
-				text: `${item.getFileInfo()}`,
-				cls: 'card-text',
-			});
+			cardItem
+				.createDiv({
+					cls: 'card-content',
+				})
+				.createEl('p', {
+					text: item.getTitleName(),
+					cls: 'card-text',
+				});
 		}
 
 		logger.info('ItemVew was opened');
 	}
 
 	async onClose() {
-    this.containerEl.empty();
+		this.containerEl.empty();
 		logger.info('ItemVew was closed');
 	}
 }

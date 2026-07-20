@@ -21,11 +21,7 @@ export abstract class MediaItem {
     this.year = data.year;
   }
 
-  public getFileInfo(): string {
-    return `title: ${this.title}` + '\n'
-     + `${this.type}` + '\n'
-     + `${this.status}` + '\n'
-     + `${this.poster}` + '\n'
-     + `${this.year}` + '\n';
+  public getTitleName(): string {
+    return `${this.title}`
   }
 }

@@ -4,33 +4,47 @@
 
 .media-cards-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(180px, 260px));
+	justify-content: center;
 	gap: 16px;
 	padding: 10px;
 }
 
 .card-item {
+	display: flex;
+	flex-direction: column;
+
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 12px;
-	padding: 12px;
-	background-color: bisque;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	overflow: hidden;
+
+	background: var(--background-primary);
+	cursor: pointer;
+
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
-	box-sizing: border-box;
-	overflow-wrap: break-word;
-	word-break: break-all;
 }
 
 .card-item:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	transform: translateY(-4px);
+	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 	border-color: var(--interactive-accent);
+}
 
+.card-poster {
+	display: block;
+	width: 100%;
+	aspect-ratio: 2 / 3;
+	object-fit: cover;
+	image-rendering: auto;
+}
+
+.card-content {
+	padding: 12px;
 }
 
 .card-text {
-	color: black;
-	white-space: pre-line;
 	margin: 0;
-	font-size: 1.01em;
+	text-align: center;
+	font-weight: 600;
+	color: var(--text-normal);
 }
