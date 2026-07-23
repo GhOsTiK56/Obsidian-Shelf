@@ -26,11 +26,6 @@ export class LibraryView extends ItemView {
 		const container = this.contentEl;
 		container.empty();
 
-		container.createEl('h2', {
-			text: 'My library',
-			cls: 'library-title',
-		});
-
 		const select = container.createEl('select', {
 			cls: 'select',
 		});
@@ -79,17 +74,27 @@ export class LibraryView extends ItemView {
 				cls: 'card-item',
 			});
 
-			cardItem.onclick = async () => {
-				if (item.file) {
-					const leaf = this.app.workspace.getLeaf(false);
-					await leaf.openFile(item.file);
-				}
-			};
+			const imageWrapper = cardItem.createDiv({
+				cls: 'card-image-wrapper',
+			});
 
 			if (item.poster) {
-				cardItem.createEl('img', {
+				imageWrapper.createEl('img', {
 					cls: 'card-poster',
 					attr: { src: item.poster, alt: item.getTitleName() },
+				});
+			} else {
+				imageWrapper.createDiv({ cls: 'card-poster-placeholder' });
+			}
+
+			const textOverlay = imageWrapper.createDiv({
+				cls: 'card-text-overlay',
+			});
+
+			if (item.status) {
+				textOverlay.createSpan({
+					text: item.status,
+					cls: 'card-overlay-status',
 				});
 			}
 
@@ -101,6 +106,13 @@ export class LibraryView extends ItemView {
 					text: item.getTitleName(),
 					cls: 'card-text',
 				});
+
+			cardItem.onclick = async () => {
+				if (item.file) {
+					const leaf = this.app.workspace.getLeaf(false);
+					await leaf.openFile(item.file);
+				}
+			};
 		}
 	}
 

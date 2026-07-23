@@ -1,50 +1,87 @@
-.library-title {
-	padding: 10px;
+.select {
+	margin-bottom: 15px;
 }
 
 .media-cards-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(180px, 260px));
-	justify-content: center;
-	gap: 16px;
-	padding: 10px;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	gap: 15px;
 }
 
 .card-item {
 	display: flex;
 	flex-direction: column;
-
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 12px;
+	border-radius: 8px;
 	overflow: hidden;
-
-	background: var(--background-primary);
-	cursor: pointer;
-
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	cursor: pointer;
 }
 
 .card-item:hover {
-	transform: translateY(-4px);
-	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+	transform: translateY(-3px);
+	box-shadow: var(--shadow-s);
 	border-color: var(--interactive-accent);
 }
 
-.card-poster {
-	display: block;
+.card-image-wrapper {
+	position: relative;
 	width: 100%;
-	aspect-ratio: 2 / 3;
+	aspect-ratio: 2/3;
+	background-color: var(--background-secondary);
+}
+
+.card-poster {
+	width: 100%;
+	height: 100%;
 	object-fit: cover;
-	image-rendering: auto;
+	display: block;
+}
+
+.card-poster-placeholder {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	content: "No Cover";
+}
+
+.card-text-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 8px;
+	pointer-events: none;
+	background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, transparent 50%);
+}
+
+.card-overlay-status {
+	color: white;
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	align-self: flex-end;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .card-content {
-	padding: 12px;
+	padding: 10px;
+	background-color: var(--background-primary);
+	border-top: 1px solid var(--background-modifier-border);
 }
 
 .card-text {
 	margin: 0;
-	text-align: center;
-	font-weight: 600;
-	color: var(--text-normal);
+	font-size: 0.9rem;
+	font-weight: 500;
+	line-height: 1.2;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
