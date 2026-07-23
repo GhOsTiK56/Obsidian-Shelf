@@ -8,8 +8,8 @@ export class MarkdownLoader {
 		this.app = app;
 	}
 
-	public getParsedFiles() {
-		const targetFolders = ['Anime'];
+	public getParsedFiles(shelfName: string) {
+		const targetFolders = [shelfName];
 
 		const files = this.app.vault
 			.getMarkdownFiles()
