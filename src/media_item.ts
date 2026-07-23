@@ -1,9 +1,12 @@
+import { TFile } from "obsidian";
+
 export interface RawFileData {
   title: string;
   type: string;
   status: string;
   poster: string;
   year: number; 
+  file: TFile;
 }
 
 export abstract class MediaItem {
@@ -12,6 +15,7 @@ export abstract class MediaItem {
   public status: string;
   public poster: string
   public year: number;
+  public file: TFile
 
   constructor(data: RawFileData) {
     this.title = data.title;
@@ -19,6 +23,7 @@ export abstract class MediaItem {
     this.status = data.status;
     this.poster = data.poster;
     this.year = data.year;
+    this.file = data.file;
   }
 
   public getTitleName(): string {

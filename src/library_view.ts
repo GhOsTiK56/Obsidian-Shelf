@@ -79,6 +79,13 @@ export class LibraryView extends ItemView {
 				cls: 'card-item',
 			});
 
+			cardItem.onclick = async () => {
+				if (item.file) {
+					const leaf = this.app.workspace.getLeaf(false);
+					await leaf.openFile(item.file);
+				}
+			};
+
 			if (item.poster) {
 				cardItem.createEl('img', {
 					cls: 'card-poster',

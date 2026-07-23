@@ -28,6 +28,7 @@ export class MarkdownLoader {
 					status: 'unknown',
 					poster: 'unknown',
 					year: 0,
+          file: file
 				});
 				continue;
 			}
@@ -46,6 +47,7 @@ export class MarkdownLoader {
 					(parseFrontMatterEntry(cache.frontmatter, 'poster') as string) ||
 					'unknown',
 				year: (parseFrontMatterEntry(cache.frontmatter, 'year') as number) || 0,
+        file: file
 			};
 
 			parsedFiles.push(fileData);
