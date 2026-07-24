@@ -1,17 +1,20 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
 import { logger } from './common/logger';
-import { MediaItem } from './media_item';
-import { BookItem } from './book_item';
-import { MarkdownLoader } from './markdown_loader';
+import { MediaItem } from './common/media_item';
+import { BookItem } from './common/book_item';
+import { MarkdownLoader } from './common/markdown_loader';
+import ObsidianShelf from './main';
 
 export const VIEW_TYPE_LIBRARY = 'library-view';
 
 export class LibraryView extends ItemView {
 	private gridContainer!: HTMLElement;
 	private loader!: MarkdownLoader;
+	public plugin: ObsidianShelf;
 
-	public constructor(leaf: WorkspaceLeaf) {
+	public constructor(leaf: WorkspaceLeaf, plugin: ObsidianShelf) {
 		super(leaf);
+		this.plugin = plugin;
 	}
 
 	getViewType(): string {
@@ -31,11 +34,11 @@ export class LibraryView extends ItemView {
 		});
 
 		const categories = [
-			{ value: 'Books', text: '📚 Books' },
-			{ value: 'Movies', text: '🎬 Movies' },
-			{ value: 'Anime', text: '⛩️ Anime' },
-			{ value: 'Games', text: '🎮 Games' },
-			{ value: 'TV Shows', text: '📺 TV Shows' },
+			{ value: `${this.plugin.settings.booksPath}`, text: '📚 Books' },
+			{ value: `${this.plugin.settings.moviesPath}`, text: '🎬 Movies' },
+			{ value: `${this.plugin.settings.animePath}`, text: '⛩️ Anime' },
+			{ value: `${this.plugin.settings.gamesPath}`, text: '🎮 Games' },
+			{ value: `${this.plugin.settings.tvShowsPath}`, text: '📺 TV Shows' },
 		];
 
 		categories.forEach((category) => {
@@ -58,6 +61,10 @@ export class LibraryView extends ItemView {
 		};
 
 		logger.info('ItemVew was opened');
+	}
+
+	public async refreshView() {
+		await this.onOpen();
 	}
 
 	private updateContent(category: string) {
