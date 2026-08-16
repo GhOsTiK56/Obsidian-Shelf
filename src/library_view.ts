@@ -35,6 +35,7 @@ export class LibraryView extends ItemView {
 
 		const categories = [
 			{ value: `${this.plugin.settings.booksPath}`, text: '📚 Books' },
+			{ value: `${this.plugin.settings.mangaPath}`, text: '📖 Manga'},
 			{ value: `${this.plugin.settings.moviesPath}`, text: '🎬 Movies' },
 			{ value: `${this.plugin.settings.animePath}`, text: '⛩️ Anime' },
 			{ value: `${this.plugin.settings.gamesPath}`, text: '🎮 Games' },
@@ -60,7 +61,7 @@ export class LibraryView extends ItemView {
 			this.updateContent(select.value);
 		};
 
-		logger.info('ItemVew was opened');
+		logger.info('ItemView was opened');
 	}
 
 	public async refreshView() {

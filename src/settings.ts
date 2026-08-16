@@ -4,6 +4,7 @@ import { logger } from './common/logger';
 
 export interface ObsidianShelfSettings {
 	booksPath: string;
+	mangaPath: string;
 	animePath: string;
 	gamesPath: string;
 	moviesPath: string;
@@ -12,6 +13,7 @@ export interface ObsidianShelfSettings {
 
 export const DEFAULT_SETTINGS: ObsidianShelfSettings = {
 	booksPath: 'Books',
+	mangaPath: 'Manga',
 	animePath: 'Anime',
 	gamesPath: 'Games',
 	moviesPath: 'Movies',
@@ -38,7 +40,7 @@ export class SettingTab extends PluginSettingTab {
 
 		saveButton.addEventListener('click', () => {
       this.plugin.saveSettings().catch((error) => {
-        logger.error(`Failed to save settings: ${error}`);  
+        logger.error(`Failed to save settings: ${error}`);
       })
 		});
 
@@ -51,6 +53,18 @@ export class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.booksPath)
 					.onChange(async (value) => {
 						this.plugin.settings.booksPath = value;
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName('Manga cards path')
+			.setDesc('Manga cards path')
+			.addText((text) =>
+				text
+					.setPlaceholder('Enter your path')
+					.setValue(this.plugin.settings.mangaPath)
+					.onChange(async (value) => {
+						this.plugin.settings.mangaPath = value;
 					}),
 			);
 
