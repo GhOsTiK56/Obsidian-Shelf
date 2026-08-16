@@ -1,5 +1,4 @@
 import { Plugin } from 'obsidian';
-import { logger } from './common/logger';
 import { VIEW_TYPE_LIBRARY, LibraryView } from './library_view';
 import {
 	DEFAULT_SETTINGS,
@@ -27,7 +26,6 @@ export default class ObsidianShelf extends Plugin {
 
 		this.addSettingTab(new SettingTab(this.app, this));
 
-		logger.info('Plugin Loaded');
 	}
 
 	public async loadSettings() {
@@ -52,6 +50,5 @@ export default class ObsidianShelf extends Plugin {
 	}
 
 	onunload() {
-		logger.info('Plugin Unloaded');
 	}
 }

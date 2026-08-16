@@ -1,6 +1,5 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import ObsidianShelf from './main';
-import { logger } from './common/logger';
 
 export interface ObsidianShelfSettings {
 	booksPath: string;
@@ -40,7 +39,6 @@ export class SettingTab extends PluginSettingTab {
 
 		saveButton.addEventListener('click', () => {
       this.plugin.saveSettings().catch((error) => {
-        logger.error(`Failed to save settings: ${error}`);
       })
 		});
 

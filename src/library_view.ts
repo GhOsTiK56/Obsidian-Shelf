@@ -1,5 +1,4 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
-import { logger } from './common/logger';
 import { MediaItem } from './common/media_item';
 import { BookItem } from './common/book_item';
 import { MarkdownLoader } from './common/markdown_loader';
@@ -57,11 +56,8 @@ export class LibraryView extends ItemView {
 		this.updateContent(select.value);
 
 		select.onchange = () => {
-			logger.info(`Library changed to: ${select.value}`);
 			this.updateContent(select.value);
 		};
-
-		logger.info('ItemView was opened');
 	}
 
 	public async refreshView() {
@@ -126,6 +122,5 @@ export class LibraryView extends ItemView {
 
 	async onClose() {
 		this.containerEl.empty();
-		logger.info('ItemVew was closed');
 	}
 }
