@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { ItemView, WorkspaceLeaf, EventRef, TFile } from 'obsidian';
 import { MediaItem, RawFileData } from './common/media_item';
 import { BookItem } from './common/book_item';
 import { MarkdownLoader } from './common/markdown_loader';
@@ -13,7 +13,9 @@ export class LibraryView extends ItemView {
 
 	private currentCategory: string = '';
 	private currentSortOrder: string = 'tag-group';
-	private searchQuery: string = ''; // Хранение текущей поисковой строки
+	private searchQuery: string = '';
+
+	private eventRefs: EventRef[] = [];
 
 	public constructor(leaf: WorkspaceLeaf, plugin: ObsidianShelf) {
 		super(leaf);
@@ -36,7 +38,6 @@ export class LibraryView extends ItemView {
 			cls: 'controls-wrapper',
 		});
 
-		// 1. Поле ввода для поиска
 		const searchInput = controlsWrapper.createEl('input', {
 			cls: 'search-input',
 			attr: {
@@ -45,7 +46,6 @@ export class LibraryView extends ItemView {
 			},
 		});
 
-		// 2. Селектор категорий
 		const selectCategory = controlsWrapper.createEl('select', {
 			cls: 'select',
 		});
@@ -65,7 +65,6 @@ export class LibraryView extends ItemView {
 			option.text = category.text;
 		});
 
-		// 3. Селектор сортировки
 		const selectSort = controlsWrapper.createEl('select', {
 			cls: 'select',
 		});
@@ -95,7 +94,6 @@ export class LibraryView extends ItemView {
 
 		this.updateContent();
 
-		// Обработчики событий
 		searchInput.oninput = () => {
 			this.searchQuery = searchInput.value.trim().toLowerCase();
 			this.updateContent();
@@ -110,6 +108,38 @@ export class LibraryView extends ItemView {
 			this.currentSortOrder = selectSort.value;
 			this.updateContent();
 		};
+
+		this.registerEventListeners();
+	}
+
+	private registerEventListeners() {
+		this.unregisterEventListeners();
+
+		const handleVaultChange = () => {
+			this.updateContent();
+		};
+
+		const handleMetadataChange = (file: TFile) => {
+			if (this.currentCategory && file.path.startsWith(this.currentCategory)) {
+				this.updateContent();
+			}
+		};
+
+		this.eventRefs.push(this.app.vault.on('create', handleVaultChange));
+		this.eventRefs.push(this.app.vault.on('delete', handleVaultChange));
+		this.eventRefs.push(this.app.vault.on('rename', handleVaultChange));
+
+		this.eventRefs.push(
+			this.app.metadataCache.on('changed', handleMetadataChange),
+		);
+	}
+
+	private unregisterEventListeners() {
+		this.eventRefs.forEach((ref) => {
+			this.app.vault.offref(ref);
+			this.app.metadataCache.offref(ref);
+		});
+		this.eventRefs = [];
 	}
 
 	public async refreshView() {
@@ -121,9 +151,7 @@ export class LibraryView extends ItemView {
 
 		let mediaData = this.loader.getParsedFiles(this.currentCategory);
 
-		// Фильтрация по названию ИЛИ тегам
 		if (this.searchQuery !== '') {
-			// Убираем # из начала запроса, если пользователь ищет по тегу через решетку (#fantasy -> fantasy)
 			const cleanQuery = this.searchQuery.startsWith('#')
 				? this.searchQuery.slice(1)
 				: this.searchQuery;
@@ -271,6 +299,7 @@ export class LibraryView extends ItemView {
 	}
 
 	async onClose() {
+		this.unregisterEventListeners();
 		this.containerEl.empty();
 	}
 }
