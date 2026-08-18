@@ -5,7 +5,8 @@ export interface RawFileData {
   type: string;
   status: string;
   poster: string;
-  year: number; 
+	year: number;
+	tags: string[];
   file: TFile;
 }
 
@@ -14,7 +15,8 @@ export abstract class MediaItem {
   public type: string;
   public status: string;
   public poster: string
-  public year: number;
+	public year: number;
+	public tags: string[];
   public file: TFile
 
   constructor(data: RawFileData) {
@@ -22,7 +24,8 @@ export abstract class MediaItem {
     this.type = data.type;
     this.status = data.status;
     this.poster = data.poster;
-    this.year = data.year;
+		this.year = data.year;
+		this.tags = data.tags;
     this.file = data.file;
   }
 

@@ -8,7 +8,7 @@ export class MarkdownLoader {
 		this.app = app;
 	}
 
-	public getParsedFiles(shelfName: string) {
+	public getParsedFiles(shelfName: string): RawFileData[] {
 		const targetFolders = [shelfName];
 
 		const files = this.app.vault
@@ -16,6 +16,7 @@ export class MarkdownLoader {
 			.filter((file) =>
 				targetFolders.some((folder) => file.path.startsWith(folder + '/')),
 			);
+
 		const parsedFiles: RawFileData[] = [];
 
 		for (const file of files) {
@@ -28,9 +29,23 @@ export class MarkdownLoader {
 					status: 'unknown',
 					poster: 'unknown',
 					year: 0,
-          file: file
+					tags: [],
+					file: file,
 				});
 				continue;
+			}
+
+			// Безопасное извлечение тегов из frontmatter
+			const rawTags = parseFrontMatterEntry(
+				cache.frontmatter,
+				'tags',
+			) as unknown;
+			let tags: string[] = [];
+
+			if (Array.isArray(rawTags)) {
+				tags = rawTags.map((t) => String(t));
+			} else if (typeof rawTags === 'string') {
+				tags = rawTags.split(',').map((t) => t.trim());
 			}
 
 			const fileData: RawFileData = {
@@ -47,7 +62,8 @@ export class MarkdownLoader {
 					(parseFrontMatterEntry(cache.frontmatter, 'poster') as string) ||
 					'unknown',
 				year: (parseFrontMatterEntry(cache.frontmatter, 'year') as number) || 0,
-        file: file
+				tags: tags,
+				file: file,
 			};
 
 			parsedFiles.push(fileData);
