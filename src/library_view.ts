@@ -1,9 +1,4 @@
-import {
-	ItemView,
-	WorkspaceLeaf,
-	TFile,
-	debounce,
-} from 'obsidian';
+import { ItemView, WorkspaceLeaf, TFile, debounce } from 'obsidian';
 import { MediaItem, RawFileData } from './common/media_item';
 import { BookItem } from './common/book_item';
 import { MarkdownLoader } from './common/markdown_loader';
@@ -211,27 +206,125 @@ export class LibraryView extends ItemView {
 		});
 	}
 
+	private getRatingColor(rating: number | string): string {
+		const num = typeof rating === 'number' ? rating : parseFloat(rating);
+		if (isNaN(num)) return 'var(--text-normal)';
+
+		const max = 10;
+		const ratio = Math.max(0, Math.min(1, num / max));
+		const hue = ratio * 120;
+
+		return `hsl(${hue}, 80%, 50%)`;
+	}
+
+	private getStatusColor(status: string): string {
+		const s = status.toLowerCase();
+
+		if (
+			[
+				'completed',
+				'finished',
+				'read',
+				'watched',
+				'done',
+				'прочитано',
+				'просмотрено',
+				'завершено',
+			].some((k) => s.includes(k))
+		)
+			return 'hsl(120, 80%, 50%)';
+		if (
+			[
+				'progress',
+				'reading',
+				'watching',
+				'playing',
+				'current',
+				'в процессе',
+				'читаю',
+				'смотрю',
+			].some((k) => s.includes(k))
+		)
+			return 'hsl(40, 80%, 50%)';
+		if (['hold', 'pause', 'отложено', 'пауза'].some((k) => s.includes(k)))
+			return 'hsl(30, 80%, 50%)';
+		if (['drop', 'abandon', 'stop', 'брошено'].some((k) => s.includes(k)))
+			return 'hsl(0, 80%, 50%)';
+		if (
+			['plan', 'want', 'backlog', 'планах', 'буду'].some((k) => s.includes(k))
+		)
+			return 'hsl(0, 0%, 60%)';
+
+		return 'var(--text-accent, #3fffb2)';
+	}
+
 	private renderCard(container: ParentNode, item: MediaItem): void {
 		const cardItem = container.createEl('div', { cls: 'card-item' });
 
+		const titleName = item.getTitleName();
 		const imageWrapper = cardItem.createDiv({ cls: 'card-image-wrapper' });
 
 		if (item.poster) {
 			imageWrapper.createEl('img', {
 				cls: 'card-poster',
-				attr: { src: item.poster, alt: item.getTitleName(), loading: 'lazy' },
+				attr: { src: item.poster, alt: titleName, loading: 'lazy' },
 			});
 		} else {
 			imageWrapper.createDiv({ cls: 'card-poster-placeholder' });
 		}
 
-		if (item.status) {
-			const textOverlay = imageWrapper.createDiv({ cls: 'card-text-overlay' });
-			textOverlay.createSpan({ text: item.status, cls: 'card-overlay-status' });
+		let rating: number | string | null = null;
+		if (item.file) {
+			const cache = this.app.metadataCache.getFileCache(item.file);
+			if (cache && cache.frontmatter) {
+				const fm = cache.frontmatter;
+				const foundRating = fm['rating'] ?? fm['score'] ?? fm['rate'];
+
+				if (
+					typeof foundRating === 'number' ||
+					typeof foundRating === 'string'
+				) {
+					rating = foundRating;
+				}
+			}
 		}
 
-		const content = cardItem.createDiv({ cls: 'card-content' });
-		content.createEl('p', { text: item.getTitleName(), cls: 'card-text' });
+		if (rating == null) {
+			const itemRecord = item as unknown as Record<string, unknown>;
+			const possibleRating =
+				itemRecord['rating'] ??
+				itemRecord['score'] ??
+				itemRecord['rate'] ??
+				(itemRecord['data'] as Record<string, unknown> | undefined)?.['rating'];
+
+			if (
+				typeof possibleRating === 'number' ||
+				typeof possibleRating === 'string'
+			) {
+				rating = possibleRating;
+			}
+		}
+
+		if (item.status || rating != null) {
+			const textOverlay = imageWrapper.createDiv({ cls: 'card-text-overlay' });
+			const tagsWrapper = textOverlay.createDiv({ cls: 'card-overlay-tags' });
+
+			if (item.status) {
+				const statusEl = tagsWrapper.createSpan({
+					text: item.status,
+					cls: 'card-overlay-status',
+				});
+				statusEl.style.color = this.getStatusColor(item.status);
+			}
+
+			if (rating != null) {
+				const ratingEl = tagsWrapper.createSpan({
+					text: `★ ${rating}`,
+					cls: 'card-overlay-rating',
+				});
+				ratingEl.style.color = this.getRatingColor(rating);
+			}
+		}
 
 		cardItem.addEventListener('click', () => {
 			if (!item.file) return;
