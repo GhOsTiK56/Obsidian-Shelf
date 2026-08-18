@@ -1,4 +1,9 @@
-import { ItemView, WorkspaceLeaf, EventRef, TFile } from 'obsidian';
+import {
+	ItemView,
+	WorkspaceLeaf,
+	TFile,
+	debounce,
+} from 'obsidian';
 import { MediaItem, RawFileData } from './common/media_item';
 import { BookItem } from './common/book_item';
 import { MarkdownLoader } from './common/markdown_loader';
@@ -6,23 +11,35 @@ import ObsidianShelf from './main';
 
 export const VIEW_TYPE_LIBRARY = 'library-view';
 
+type SortOrder =
+	'tag-group' | 'title-asc' | 'title-desc' | 'year-asc' | 'year-desc';
+
+const SORT_OPTIONS: Array<{ value: SortOrder; label: string }> = [
+	{ value: 'tag-group', label: 'Group by Tag (Chronological)' },
+	{ value: 'title-asc', label: 'Title (A-Z)' },
+	{ value: 'title-desc', label: 'Title (Z-A)' },
+	{ value: 'year-asc', label: 'Date (Oldest)' },
+	{ value: 'year-desc', label: 'Date (Newest)' },
+];
+
 export class LibraryView extends ItemView {
-	private gridContainer!: HTMLElement;
-	private loader!: MarkdownLoader;
-	public plugin: ObsidianShelf;
+	public readonly plugin: ObsidianShelf;
+	private readonly loader: MarkdownLoader;
 
-	private currentCategory: string = '';
-	private currentSortOrder: string = 'tag-group';
-	private currentStatus: string = 'all';
-	private searchQuery: string = '';
-
+	private gridContainer!: HTMLDivElement;
 	private selectStatus!: HTMLSelectElement;
 
-	private eventRefs: EventRef[] = [];
+	private state = {
+		category: '',
+		sortOrder: 'tag-group' as SortOrder,
+		status: 'all',
+		searchQuery: '',
+	};
 
-	public constructor(leaf: WorkspaceLeaf, plugin: ObsidianShelf) {
+	constructor(leaf: WorkspaceLeaf, plugin: ObsidianShelf) {
 		super(leaf);
 		this.plugin = plugin;
+		this.loader = new MarkdownLoader(this.app);
 	}
 
 	getViewType(): string {
@@ -33,13 +50,20 @@ export class LibraryView extends ItemView {
 		return 'My library';
 	}
 
-	async onOpen() {
-		const container = this.contentEl;
-		container.empty();
+	async onOpen(): Promise<void> {
+		const { contentEl } = this;
+		contentEl.empty();
 
-		const controlsWrapper = container.createDiv({
-			cls: 'controls-wrapper',
-		});
+		this.renderControls(contentEl);
+
+		this.gridContainer = contentEl.createDiv({ cls: 'media-cards-grid' });
+
+		this.registerEventListeners();
+		this.updateContent();
+	}
+
+	private renderControls(container: HTMLElement): void {
+		const controlsWrapper = container.createDiv({ cls: 'controls-wrapper' });
 
 		const searchInput = controlsWrapper.createEl('input', {
 			cls: 'search-input',
@@ -49,224 +73,178 @@ export class LibraryView extends ItemView {
 			},
 		});
 
+		const debouncedSearch = debounce(
+			(value: string) => {
+				this.state.searchQuery = value.trim().toLowerCase();
+				this.updateContent();
+			},
+			300,
+			true,
+		);
+
+		searchInput.addEventListener('input', (e) => {
+			const target = e.target as HTMLInputElement;
+			debouncedSearch(target.value);
+		});
+
 		const selectCategory = controlsWrapper.createEl('select', {
 			cls: 'select',
 		});
+		const categories = this.getCategoryOptions();
 
-		const categories = [
-			{ value: `${this.plugin.settings.booksPath}`, text: '📚 Books' },
-			{ value: `${this.plugin.settings.mangaPath}`, text: '📖 Manga' },
-			{ value: `${this.plugin.settings.moviesPath}`, text: '🎬 Movies' },
-			{ value: `${this.plugin.settings.animePath}`, text: '⛩️ Anime' },
-			{ value: `${this.plugin.settings.gamesPath}`, text: '🎮 Games' },
-			{ value: `${this.plugin.settings.tvShowsPath}`, text: '📺 TV Shows' },
-		];
-
-		categories.forEach((category) => {
-			const option = selectCategory.createEl('option');
-			option.value = category.value;
-			option.text = category.text;
+		categories.forEach(({ value, label }) => {
+			selectCategory.createEl('option', { value, text: label });
 		});
 
-		this.selectStatus = controlsWrapper.createEl('select', {
-			cls: 'select',
-		});
-
-		const selectSort = controlsWrapper.createEl('select', {
-			cls: 'select',
-		});
-
-		const sortOptions = [
-			{ value: 'tag-group', text: 'Group by Tag (Chronological)' },
-			{ value: 'title-asc', text: 'Title (A-Z)' },
-			{ value: 'title-desc', text: 'Title (Z-A)' },
-			{ value: 'year-asc', text: 'Date (Oldest)' },
-			{ value: 'year-desc', text: 'Date (Newest)' },
-		];
-
-		sortOptions.forEach((option) => {
-			const opt = selectSort.createEl('option');
-			opt.value = option.value;
-			opt.text = option.text;
-		});
-
-		this.currentCategory = selectCategory.value;
-		this.currentSortOrder = selectSort.value;
-
-		this.loader = new MarkdownLoader(this.app);
-
-		this.gridContainer = container.createDiv({
-			cls: 'media-cards-grid',
-		});
-
-		this.updateContent();
-
-		searchInput.oninput = () => {
-			this.searchQuery = searchInput.value.trim().toLowerCase();
+		this.state.category = selectCategory.value;
+		selectCategory.addEventListener('change', () => {
+			this.state.category = selectCategory.value;
+			this.state.status = 'all';
 			this.updateContent();
-		};
+		});
 
-		selectCategory.onchange = () => {
-			this.currentCategory = selectCategory.value;
-			this.currentStatus = 'all';
+		this.selectStatus = controlsWrapper.createEl('select', { cls: 'select' });
+		this.selectStatus.addEventListener('change', () => {
+			this.state.status = this.selectStatus.value;
 			this.updateContent();
-		};
+		});
 
-		this.selectStatus.onchange = () => {
-			this.currentStatus = this.selectStatus.value;
+		const selectSort = controlsWrapper.createEl('select', { cls: 'select' });
+		SORT_OPTIONS.forEach(({ value, label }) => {
+			selectSort.createEl('option', { value, text: label });
+		});
+
+		this.state.sortOrder = selectSort.value as SortOrder;
+		selectSort.addEventListener('change', () => {
+			this.state.sortOrder = selectSort.value as SortOrder;
 			this.updateContent();
-		};
-
-		selectSort.onchange = () => {
-			this.currentSortOrder = selectSort.value;
-			this.updateContent();
-		};
-
-		this.registerEventListeners();
+		});
 	}
 
-	private registerEventListeners() {
-		this.unregisterEventListeners();
-
-		const handleVaultChange = () => {
-			this.updateContent();
-		};
+	private registerEventListeners(): void {
+		const handleVaultChange = () => this.updateContent();
 
 		const handleMetadataChange = (file: TFile) => {
-			if (this.currentCategory && file.path.startsWith(this.currentCategory)) {
+			if (this.state.category && file.path.startsWith(this.state.category)) {
 				this.updateContent();
 			}
 		};
 
-		this.eventRefs.push(this.app.vault.on('create', handleVaultChange));
-		this.eventRefs.push(this.app.vault.on('delete', handleVaultChange));
-		this.eventRefs.push(this.app.vault.on('rename', handleVaultChange));
-		this.eventRefs.push(
+		this.registerEvent(this.app.vault.on('create', handleVaultChange));
+		this.registerEvent(this.app.vault.on('delete', handleVaultChange));
+		this.registerEvent(this.app.vault.on('rename', handleVaultChange));
+		this.registerEvent(
 			this.app.metadataCache.on('changed', handleMetadataChange),
 		);
 	}
 
-	private unregisterEventListeners() {
-		this.eventRefs.forEach((ref) => {
-			this.app.vault.offref(ref);
-			this.app.metadataCache.offref(ref);
-		});
-		this.eventRefs = [];
+	private updateContent(): void {
+		if (!this.gridContainer) return;
+
+		this.gridContainer.empty();
+
+		let rawData = this.loader.getParsedFiles(this.state.category);
+
+		this.updateStatusDropdownOptions(rawData);
+
+		rawData = this.filterData(rawData);
+		rawData = this.sortMediaData(rawData, this.state.sortOrder);
+
+		const mediaItems: MediaItem[] = rawData.map((file) => new BookItem(file));
+
+		const fragment = document.createDocumentFragment();
+		for (const item of mediaItems) {
+			this.renderCard(fragment, item);
+		}
+
+		this.gridContainer.appendChild(fragment);
 	}
 
-	public async refreshView() {
-		await this.onOpen();
-	}
+	private updateStatusDropdownOptions(rawFiles: RawFileData[]): void {
+		const uniqueStatuses = new Set<string>();
 
-	private updateStatusDropdown(rawFiles: RawFileData[]) {
-		const statuses = new Set<string>();
 		rawFiles.forEach((file) => {
-			if (file.status && file.status.trim() !== '') {
-				statuses.add(file.status.trim());
+			if (file.status?.trim()) {
+				uniqueStatuses.add(file.status.trim());
 			}
 		});
 
 		this.selectStatus.empty();
 
-		const allOption = this.selectStatus.createEl('option');
-		allOption.value = 'all';
-		allOption.text = '📌 All Statuses';
-
-		statuses.forEach((status) => {
-			const option = this.selectStatus.createEl('option');
-			option.value = status;
-			option.text = status;
+		this.selectStatus.createEl('option', {
+			value: 'all',
+			text: '📌 All Statuses',
 		});
 
-		if (statuses.has(this.currentStatus)) {
-			this.selectStatus.value = this.currentStatus;
+		uniqueStatuses.forEach((status) => {
+			this.selectStatus.createEl('option', { value: status, text: status });
+		});
+
+		if (uniqueStatuses.has(this.state.status)) {
+			this.selectStatus.value = this.state.status;
 		} else {
-			this.currentStatus = 'all';
+			this.state.status = 'all';
 			this.selectStatus.value = 'all';
 		}
 	}
 
-	private updateContent() {
-		this.gridContainer.empty();
+	private filterData(data: RawFileData[]): RawFileData[] {
+		return data.filter((item) => {
+			if (
+				this.state.status !== 'all' &&
+				item.status?.trim() !== this.state.status
+			) {
+				return false;
+			}
 
-		let mediaData = this.loader.getParsedFiles(this.currentCategory);
-
-		this.updateStatusDropdown(mediaData);
-
-		if (this.currentStatus !== 'all') {
-			mediaData = mediaData.filter(
-				(item) => item.status && item.status.trim() === this.currentStatus,
-			);
-		}
-
-		if (this.searchQuery !== '') {
-			const cleanQuery = this.searchQuery.startsWith('#')
-				? this.searchQuery.slice(1)
-				: this.searchQuery;
-
-			mediaData = mediaData.filter((item) => {
-				const matchesTitle = item.title.toLowerCase().includes(cleanQuery);
-
+			if (this.state.searchQuery) {
+				const query = this.state.searchQuery.replace(/^#/, '');
+				const matchesTitle = item.title.toLowerCase().includes(query);
 				const matchesTag = item.tags?.some((tag) =>
-					tag.toLowerCase().includes(cleanQuery),
+					tag.toLowerCase().includes(query),
 				);
 
 				return matchesTitle || matchesTag;
-			});
-		}
-
-		mediaData = this.sortMediaData(mediaData, this.currentSortOrder);
-
-		const mediaList: MediaItem[] = mediaData.map((file) => new BookItem(file));
-
-		for (const item of mediaList) {
-			const cardItem = this.gridContainer.createDiv({
-				cls: 'card-item',
-			});
-
-			const imageWrapper = cardItem.createDiv({
-				cls: 'card-image-wrapper',
-			});
-
-			if (item.poster) {
-				imageWrapper.createEl('img', {
-					cls: 'card-poster',
-					attr: { src: item.poster, alt: item.getTitleName() },
-				});
-			} else {
-				imageWrapper.createDiv({ cls: 'card-poster-placeholder' });
 			}
 
-			const textOverlay = imageWrapper.createDiv({
-				cls: 'card-text-overlay',
-			});
-
-			if (item.status) {
-				textOverlay.createSpan({
-					text: item.status,
-					cls: 'card-overlay-status',
-				});
-			}
-
-			cardItem
-				.createDiv({
-					cls: 'card-content',
-				})
-				.createEl('p', {
-					text: item.getTitleName(),
-					cls: 'card-text',
-				});
-
-			cardItem.onclick = async () => {
-				if (item.file) {
-					const leaf = this.app.workspace.getLeaf(false);
-					await leaf.openFile(item.file);
-				}
-			};
-		}
+			return true;
+		});
 	}
 
-	private sortMediaData(data: RawFileData[], sortType: string): RawFileData[] {
+	private renderCard(container: ParentNode, item: MediaItem): void {
+		const cardItem = container.createEl('div', { cls: 'card-item' });
+
+		const imageWrapper = cardItem.createDiv({ cls: 'card-image-wrapper' });
+
+		if (item.poster) {
+			imageWrapper.createEl('img', {
+				cls: 'card-poster',
+				attr: { src: item.poster, alt: item.getTitleName(), loading: 'lazy' },
+			});
+		} else {
+			imageWrapper.createDiv({ cls: 'card-poster-placeholder' });
+		}
+
+		if (item.status) {
+			const textOverlay = imageWrapper.createDiv({ cls: 'card-text-overlay' });
+			textOverlay.createSpan({ text: item.status, cls: 'card-overlay-status' });
+		}
+
+		const content = cardItem.createDiv({ cls: 'card-content' });
+		content.createEl('p', { text: item.getTitleName(), cls: 'card-text' });
+
+		cardItem.addEventListener('click', () => {
+			if (!item.file) return;
+
+			const leaf = this.app.workspace.getLeaf(false);
+			void leaf.openFile(item.file);
+		});
+	}
+
+	private sortMediaData(
+		data: RawFileData[],
+		sortType: SortOrder,
+	): RawFileData[] {
 		if (sortType === 'tag-group') {
 			return this.groupByTagsAndSort(data);
 		}
@@ -284,13 +262,9 @@ export class LibraryView extends ItemView {
 						sensitivity: 'base',
 					});
 				case 'year-desc':
-					if (a.year === 0) return 1;
-					if (b.year === 0) return -1;
-					return b.year - a.year;
+					return (b.year || 0) - (a.year || 0);
 				case 'year-asc':
-					if (a.year === 0) return 1;
-					if (b.year === 0) return -1;
-					return a.year - b.year;
+					return (a.year || 0) - (b.year || 0);
 				default:
 					return 0;
 			}
@@ -299,12 +273,10 @@ export class LibraryView extends ItemView {
 
 	private groupByTagsAndSort(data: RawFileData[]): RawFileData[] {
 		const groups = new Map<string, RawFileData[]>();
-		const noTagKey = 'Untagged';
+		const NO_TAG_KEY = 'Untagged';
 
 		for (const item of data) {
-			const firstTag = item.tags?.[0];
-			const primaryTag: string =
-				firstTag && firstTag.trim() !== '' ? firstTag : noTagKey;
+			const primaryTag = item.tags?.[0]?.trim() || NO_TAG_KEY;
 
 			if (!groups.has(primaryTag)) {
 				groups.set(primaryTag, []);
@@ -318,36 +290,41 @@ export class LibraryView extends ItemView {
 		};
 
 		groups.forEach((items) => {
-			items.sort((a, b) => {
-				if (a.year === 0) return 1;
-				if (b.year === 0) return -1;
-				return a.year - b.year;
-			});
+			items.sort((a, b) => (a.year || 0) - (b.year || 0));
 		});
 
 		const sortedGroupKeys = Array.from(groups.keys()).sort((tagA, tagB) => {
-			if (tagA === noTagKey) return 1;
-			if (tagB === noTagKey) return -1;
+			if (tagA === NO_TAG_KEY) return 1;
+			if (tagB === NO_TAG_KEY) return -1;
 
 			const minYearA = getMinYear(groups.get(tagA)!);
 			const minYearB = getMinYear(groups.get(tagB)!);
 
-			if (minYearA === minYearB) {
-				return tagA.localeCompare(tagB);
-			}
-			return minYearA - minYearB;
+			return minYearA === minYearB
+				? tagA.localeCompare(tagB)
+				: minYearA - minYearB;
 		});
 
-		const result: RawFileData[] = [];
-		for (const key of sortedGroupKeys) {
-			result.push(...groups.get(key)!);
-		}
-
-		return result;
+		return sortedGroupKeys.flatMap((key) => groups.get(key) || []);
 	}
 
-	async onClose() {
-		this.unregisterEventListeners();
+	private getCategoryOptions() {
+		const { settings } = this.plugin;
+		return [
+			{ value: settings.booksPath, label: '📚 Books' },
+			{ value: settings.mangaPath, label: '📖 Manga' },
+			{ value: settings.moviesPath, label: '🎬 Movies' },
+			{ value: settings.animePath, label: '⛩️ Anime' },
+			{ value: settings.gamesPath, label: '🎮 Games' },
+			{ value: settings.tvShowsPath, label: '📺 TV Shows' },
+		];
+	}
+
+	public async refreshView(): Promise<void> {
+		await this.onOpen();
+	}
+
+	async onClose(): Promise<void> {
 		this.containerEl.empty();
 	}
 }
