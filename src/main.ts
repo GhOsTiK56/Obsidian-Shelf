@@ -25,7 +25,6 @@ export default class ObsidianShelf extends Plugin {
 		});
 
 		this.addSettingTab(new SettingTab(this.app, this));
-
 	}
 
 	public async loadSettings() {
@@ -49,6 +48,5 @@ export default class ObsidianShelf extends Plugin {
 		}
 	}
 
-	onunload() {
-	}
+	onunload() {}
 }

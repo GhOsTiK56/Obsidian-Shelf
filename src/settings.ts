@@ -38,79 +38,36 @@ export class SettingTab extends PluginSettingTab {
 		});
 
 		saveButton.addEventListener('click', () => {
-      this.plugin.saveSettings().catch((error) => {
-      })
+			this.plugin.saveSettings().catch((error) => {});
 		});
 
-		new Setting(containerEl)
-			.setName('Books cards path')
-			.setDesc('Books cards path')
-			.addText((text) =>
-				text
-					.setPlaceholder('Enter your path')
-					.setValue(this.plugin.settings.booksPath)
-					.onChange(async (value) => {
-						this.plugin.settings.booksPath = value;
-					}),
-			);
+		const categories: string[] = [
+			'Books',
+			'Manga',
+			'Anime',
+			'Games',
+			'Movies',
+			'TV Shows',
+		];
 
-		new Setting(containerEl)
-			.setName('Manga cards path')
-			.setDesc('Manga cards path')
-			.addText((text) =>
-				text
-					.setPlaceholder('Enter your path')
-					.setValue(this.plugin.settings.mangaPath)
-					.onChange(async (value) => {
-						this.plugin.settings.mangaPath = value;
-					}),
-			);
-
-		new Setting(containerEl)
-			.setName('Anime cards path')
-			.setDesc('Anime cards path')
-			.addText((text) =>
-				text
-					.setPlaceholder('Enter your path')
-					.setValue(this.plugin.settings.animePath)
-					.onChange(async (value) => {
-						this.plugin.settings.animePath = value;
-					}),
-			);
-
-		new Setting(containerEl)
-			.setName('Movies cards path')
-			.setDesc('Movies cards path')
-			.addText((text) =>
-				text
-					.setPlaceholder('Enter your path')
-					.setValue(this.plugin.settings.moviesPath)
-					.onChange(async (value) => {
-						this.plugin.settings.moviesPath = value;
-					}),
-			);
-		new Setting(containerEl)
-			.setName('Games cards path')
-			.setDesc('Games cards path')
-			.addText((text) =>
-				text
-					.setPlaceholder('Enter your path')
-					.setValue(this.plugin.settings.gamesPath)
-					.onChange(async (value) => {
-						this.plugin.settings.gamesPath = value;
-					}),
-			);
-
-		new Setting(containerEl)
-			.setName('Tv shows cards path')
-			.setDesc('Tv shows cards path')
-			.addText((text) =>
-				text
-					.setPlaceholder('Enter your path')
-					.setValue(this.plugin.settings.tvShowsPath)
-					.onChange(async (value) => {
-						this.plugin.settings.tvShowsPath = value;
-					}),
-			);
+		for (const category of categories) {
+			new Setting(containerEl)
+				.setName(`${category} cards path`)
+				.setDesc(`${category} cards path`)
+				.addText((text) =>
+					text
+						.setPlaceholder(`Enter your path`)
+						.setValue(
+							this.plugin.settings[
+								`${category.toLowerCase()}Path` as keyof typeof this.plugin.settings
+							],
+						)
+						.onChange(async (value) => {
+							this.plugin.settings[
+								`${category.toLowerCase()}Path` as keyof typeof this.plugin.settings
+							] = value;
+						}),
+				);
+		}
 	}
 }
