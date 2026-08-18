@@ -13,7 +13,10 @@ export class LibraryView extends ItemView {
 
 	private currentCategory: string = '';
 	private currentSortOrder: string = 'tag-group';
+	private currentStatus: string = 'all';
 	private searchQuery: string = '';
+
+	private selectStatus!: HTMLSelectElement;
 
 	private eventRefs: EventRef[] = [];
 
@@ -65,6 +68,10 @@ export class LibraryView extends ItemView {
 			option.text = category.text;
 		});
 
+		this.selectStatus = controlsWrapper.createEl('select', {
+			cls: 'select',
+		});
+
 		const selectSort = controlsWrapper.createEl('select', {
 			cls: 'select',
 		});
@@ -101,6 +108,12 @@ export class LibraryView extends ItemView {
 
 		selectCategory.onchange = () => {
 			this.currentCategory = selectCategory.value;
+			this.currentStatus = 'all';
+			this.updateContent();
+		};
+
+		this.selectStatus.onchange = () => {
+			this.currentStatus = this.selectStatus.value;
 			this.updateContent();
 		};
 
@@ -128,7 +141,6 @@ export class LibraryView extends ItemView {
 		this.eventRefs.push(this.app.vault.on('create', handleVaultChange));
 		this.eventRefs.push(this.app.vault.on('delete', handleVaultChange));
 		this.eventRefs.push(this.app.vault.on('rename', handleVaultChange));
-
 		this.eventRefs.push(
 			this.app.metadataCache.on('changed', handleMetadataChange),
 		);
@@ -146,10 +158,46 @@ export class LibraryView extends ItemView {
 		await this.onOpen();
 	}
 
+	private updateStatusDropdown(rawFiles: RawFileData[]) {
+		const statuses = new Set<string>();
+		rawFiles.forEach((file) => {
+			if (file.status && file.status.trim() !== '') {
+				statuses.add(file.status.trim());
+			}
+		});
+
+		this.selectStatus.empty();
+
+		const allOption = this.selectStatus.createEl('option');
+		allOption.value = 'all';
+		allOption.text = '📌 All Statuses';
+
+		statuses.forEach((status) => {
+			const option = this.selectStatus.createEl('option');
+			option.value = status;
+			option.text = status;
+		});
+
+		if (statuses.has(this.currentStatus)) {
+			this.selectStatus.value = this.currentStatus;
+		} else {
+			this.currentStatus = 'all';
+			this.selectStatus.value = 'all';
+		}
+	}
+
 	private updateContent() {
 		this.gridContainer.empty();
 
 		let mediaData = this.loader.getParsedFiles(this.currentCategory);
+
+		this.updateStatusDropdown(mediaData);
+
+		if (this.currentStatus !== 'all') {
+			mediaData = mediaData.filter(
+				(item) => item.status && item.status.trim() === this.currentStatus,
+			);
+		}
 
 		if (this.searchQuery !== '') {
 			const cleanQuery = this.searchQuery.startsWith('#')
