@@ -5,18 +5,16 @@ export interface ObsidianShelfSettings {
 	booksPath: string;
 	mangaPath: string;
 	animePath: string;
-	gamesPath: string;
 	moviesPath: string;
 	tvShowsPath: string;
 }
 
 export const DEFAULT_SETTINGS: ObsidianShelfSettings = {
 	booksPath: 'Books',
-	mangaPath: 'Manga',
-	animePath: 'Anime',
-	gamesPath: 'Games',
 	moviesPath: 'Movies',
 	tvShowsPath: 'TV Shows',
+	animePath: 'Anime',
+	mangaPath: 'Manga',
 };
 
 export class SettingTab extends PluginSettingTab {
@@ -45,7 +43,6 @@ export class SettingTab extends PluginSettingTab {
 			'Books',
 			'Manga',
 			'Anime',
-			'Games',
 			'Movies',
 			'TV Shows',
 		];

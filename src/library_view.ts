@@ -405,11 +405,10 @@ export class LibraryView extends ItemView {
 		const { settings } = this.plugin;
 		return [
 			{ value: settings.booksPath, label: '📚 Books' },
-			{ value: settings.mangaPath, label: '📖 Manga' },
 			{ value: settings.moviesPath, label: '🎬 Movies' },
-			{ value: settings.animePath, label: '⛩️ Anime' },
-			{ value: settings.gamesPath, label: '🎮 Games' },
 			{ value: settings.tvShowsPath, label: '📺 TV Shows' },
+			{ value: settings.animePath, label: '⛩️ Anime' },
+			{ value: settings.mangaPath, label: '📖 Manga' },
 		];
 	}
 
