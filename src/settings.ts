@@ -6,13 +6,13 @@ export interface ObsidianShelfSettings {
 	mangaPath: string;
 	animePath: string;
 	moviesPath: string;
-	tvShowsPath: string;
+	tvSeriesPath: string;
 }
 
 export const DEFAULT_SETTINGS: ObsidianShelfSettings = {
 	booksPath: 'Books',
 	moviesPath: 'Movies',
-	tvShowsPath: 'TV Shows',
+	tvSeriesPath: 'TV Series',
 	animePath: 'Anime',
 	mangaPath: 'Manga',
 };
@@ -39,30 +39,27 @@ export class SettingTab extends PluginSettingTab {
 			this.plugin.saveSettings().catch((error) => {});
 		});
 
-		const categories: string[] = [
-			'Books',
-			'Manga',
-			'Anime',
-			'Movies',
-			'TV Shows',
+		const categoryMap: Array<{
+			label: string;
+			key: keyof ObsidianShelfSettings;
+		}> = [
+			{ label: 'Books', key: 'booksPath' },
+			{ label: 'Manga', key: 'mangaPath' },
+			{ label: 'Anime', key: 'animePath' },
+			{ label: 'Movies', key: 'moviesPath' },
+			{ label: 'TV Series', key: 'tvSeriesPath' },
 		];
 
-		for (const category of categories) {
+		for (const { label, key } of categoryMap) {
 			new Setting(containerEl)
-				.setName(`${category} cards path`)
-				.setDesc(`${category} cards path`)
+				.setName(`${label} cards path`)
+				.setDesc(`${label} cards path`)
 				.addText((text) =>
 					text
 						.setPlaceholder(`Enter your path`)
-						.setValue(
-							this.plugin.settings[
-								`${category.toLowerCase()}Path` as keyof typeof this.plugin.settings
-							],
-						)
+						.setValue(this.plugin.settings[key])
 						.onChange(async (value) => {
-							this.plugin.settings[
-								`${category.toLowerCase()}Path` as keyof typeof this.plugin.settings
-							] = value;
+							this.plugin.settings[key] = value;
 						}),
 				);
 		}

@@ -221,38 +221,22 @@ export class LibraryView extends ItemView {
 		const s = status.toLowerCase();
 
 		if (
-			[
-				'completed',
-				'finished',
-				'read',
-				'watched',
-				'done',
-				'прочитано',
-				'просмотрено',
-				'завершено',
-			].some((k) => s.includes(k))
+			['completed', 'finished', 'read', 'watched', 'done'].some((k) =>
+				s.includes(k),
+			)
 		)
 			return 'hsl(120, 80%, 50%)';
 		if (
-			[
-				'progress',
-				'reading',
-				'watching',
-				'playing',
-				'current',
-				'в процессе',
-				'читаю',
-				'смотрю',
-			].some((k) => s.includes(k))
+			['progress', 'reading', 'watching', 'playing', 'current'].some((k) =>
+				s.includes(k),
+			)
 		)
 			return 'hsl(40, 80%, 50%)';
-		if (['hold', 'pause', 'отложено', 'пауза'].some((k) => s.includes(k)))
+		if (['hold', 'pause'].some((k) => s.includes(k)))
 			return 'hsl(30, 80%, 50%)';
-		if (['drop', 'abandon', 'stop', 'брошено'].some((k) => s.includes(k)))
+		if (['drop', 'abandon', 'stop'].some((k) => s.includes(k)))
 			return 'hsl(0, 80%, 50%)';
-		if (
-			['plan', 'want', 'backlog', 'планах', 'буду'].some((k) => s.includes(k))
-		)
+		if (['plan', 'want', 'backlog'].some((k) => s.includes(k)))
 			return 'hsl(0, 0%, 60%)';
 
 		return 'var(--text-accent, #3fffb2)';
@@ -406,7 +390,7 @@ export class LibraryView extends ItemView {
 		return [
 			{ value: settings.booksPath, label: '📚 Books' },
 			{ value: settings.moviesPath, label: '🎬 Movies' },
-			{ value: settings.tvShowsPath, label: '📺 TV Shows' },
+			{ value: settings.tvSeriesPath, label: '📺 TV Series' },
 			{ value: settings.animePath, label: '⛩️ Anime' },
 			{ value: settings.mangaPath, label: '📖 Manga' },
 		];
