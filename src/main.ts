@@ -1,4 +1,3 @@
-/* eslint-disable obsidianmd/rule-custom-message */
 import { Notice, Plugin } from 'obsidian';
 import {
 	DEFAULT_SETTINGS,
@@ -6,15 +5,19 @@ import {
 	ObsidianShelfSettingTab,
 } from './settings';
 import { LIBRARY_VIEW, LibraryView } from './libraryView';
+import { LibraryRepository } from './libraryRepository';
 
 export default class ObsidianShelf extends Plugin {
 	settings!: ObsidianShelfSettings;
 
 	async onload() {
-		// Configure resources needed by the plugin.
 		await this.loadSettings();
+		const libraryRepository = new LibraryRepository(this.app);
 
-		this.registerView(LIBRARY_VIEW, (leaf) => new LibraryView(leaf));
+		this.registerView(
+			LIBRARY_VIEW,
+			(leaf) => new LibraryView(leaf, libraryRepository),
+		);
 
 		this.addRibbonIcon('library-big', 'Obsidian shelf', async () => {
 			const leaf = this.app.workspace.getLeaf('tab');
@@ -32,13 +35,6 @@ export default class ObsidianShelf extends Plugin {
 		statusBarItemEl.setText('Obsidian shelf status bar text');
 
 		this.addSettingTab(new ObsidianShelfSettingTab(this.app, this));
-
-		console.log('Plugin loaded');
-	}
-
-	onunload() {
-		// Release any resources configured by the plugin. Runs when the plugin is disabled.
-		console.log('Plugin unloaded');
 	}
 
 	async loadSettings() {
@@ -47,13 +43,9 @@ export default class ObsidianShelf extends Plugin {
 			DEFAULT_SETTINGS,
 			(await this.loadData()) as Partial<ObsidianShelfSettings>,
 		);
-
-		console.log('Settings loaded');
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-
-		console.log('Settings saved');
 	}
 }

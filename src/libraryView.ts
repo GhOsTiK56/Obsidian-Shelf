@@ -1,27 +1,41 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { LibraryRepository } from './libraryRepository';
 
 export const LIBRARY_VIEW = 'library-view';
 
 export class LibraryView extends ItemView {
-	constructor(leaf: WorkspaceLeaf) {
+	public constructor(
+		leaf: WorkspaceLeaf,
+		private readonly libraryRepository: LibraryRepository,
+	) {
 		super(leaf);
 	}
 
-	getViewType() {
+	public getViewType() {
 		return LIBRARY_VIEW;
 	}
 
-	getDisplayText() {
-		return 'Example value';
+	public getDisplayText() {
+		return 'Example value on the top';
 	}
 
-	async onOpen() {
+	public async onOpen() {
 		const container = this.contentEl;
 		container.empty();
-		container.createEl('h4', { text: 'Example view' });
+		container.addClass('container');
+
+		const mediaItems = this.libraryRepository.getLibrary();
+
+		for (const mediaItem of mediaItems)
+			if (mediaItem.poster) this.createCard(container, mediaItem.poster);
 	}
 
-  async onClose() {
-    // Nothing to clean up.
-  }
+	private createCard(container: HTMLElement, poster: string): HTMLImageElement {
+		return container.createEl('img', {
+			cls: 'card-poster',
+			attr: { src: poster, loading: 'lazy' },
+		});
+	}
+
+	public async onClose() {}
 }
