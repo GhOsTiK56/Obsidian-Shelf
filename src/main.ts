@@ -12,7 +12,10 @@ export default class ObsidianShelf extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-		const libraryRepository = new LibraryRepository(this.app);
+		const libraryRepository = new LibraryRepository(
+			this.app.vault,
+			this.app.metadataCache,
+		);
 
 		this.registerView(
 			LIBRARY_VIEW,
