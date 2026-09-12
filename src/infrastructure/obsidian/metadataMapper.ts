@@ -1,46 +1,29 @@
 import { FrontMatterCache, TFile } from 'obsidian';
-import { Status } from './common/enums';
-import { MediaItemData } from './common/interfaces';
+import {
+	MediaItem,
+	MediaItemProps,
+	MediaType,
+	Status,
+} from '../../domain/entities/mediaItem';
 
-export class MediaItem implements MediaItemData {
-	author?: string;
-	poster?: string;
-	rating?: number;
-	status: Status;
-	tags?: string[];
-	title: string;
-	type?: string;
-	year?: number;
-	file: TFile;
-
-	constructor(data: MediaItemData, file: TFile) {
-		this.author = data.author;
-		this.poster = data.poster;
-		this.rating = data.rating;
-		this.status = data.status;
-		this.tags = data.tags;
-		this.title = data.title;
-		this.type = data.type;
-		this.year = data.year;
-		this.file = file;
-	}
-
-	static fromFrontmatter(
+export class MetadataMapper {
+	static mapMetadata(
 		frontmatter: FrontMatterCache | undefined,
 		file: TFile,
 	): MediaItem {
-		const data: MediaItemData = {
+		const props: MediaItemProps = {
 			title: this.parseString(frontmatter?.['title']) ?? file.basename,
 			status: this.parseStatus(frontmatter?.['status']),
 			author: this.parseString(frontmatter?.['author']),
 			poster: this.parseString(frontmatter?.['poster']),
-			type: this.parseString(frontmatter?.['type']),
+			type: this.parseType(frontmatter?.['type']),
 			rating: this.parseNumber(frontmatter?.['rating']),
 			year: this.parseNumber(frontmatter?.['year']),
 			tags: this.parseStringArray(frontmatter?.['tags']),
+			path: this.parseString(file.basename),
 		};
 
-		return new MediaItem(data, file);
+		return new MediaItem(props);
 	}
 
 	private static parseString(value: unknown): string | undefined {
@@ -62,6 +45,17 @@ export class MediaItem implements MediaItemData {
 			return value as Status;
 		}
 		return fallback;
+	}
+
+	private static parseType(value: unknown): MediaType | undefined {
+		if (
+			typeof value === 'string' &&
+			Object.values(MediaType).includes(value as MediaType)
+		) {
+			return value as MediaType;
+		}
+
+		return undefined;
 	}
 
 	private static parseStringArray(value: unknown): string[] | undefined {

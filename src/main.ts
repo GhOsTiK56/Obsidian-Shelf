@@ -2,24 +2,27 @@ import { Notice, Plugin } from 'obsidian';
 import {
 	DEFAULT_SETTINGS,
 	ObsidianShelfSettings,
-	ObsidianShelfSettingTab,
-} from './settings';
-import { LIBRARY_VIEW, LibraryView } from './libraryView';
-import { LibraryRepository } from './libraryRepository';
+} from './infrastructure/obsidian/settings';
+import { LIBRARY_VIEW, LibraryView } from './presentation/views/libraryView';
+import { ObsidianLibraryRepository } from './infrastructure/obsidian/obsidianLibraryRepository';
+import { ObsidianShelfSettingTab } from './presentation/views/obsidianShelfSettingTab';
+import { LoadLibrary } from './application/use-cases/loadLibrary';
 
 export default class ObsidianShelf extends Plugin {
 	settings!: ObsidianShelfSettings;
 
 	async onload() {
 		await this.loadSettings();
-		const libraryRepository = new LibraryRepository(
+		const libraryRepository = new ObsidianLibraryRepository(
 			this.app.vault,
 			this.app.metadataCache,
 		);
 
+		const loadLibraryUseCase = new LoadLibrary(libraryRepository);
+
 		this.registerView(
 			LIBRARY_VIEW,
-			(leaf) => new LibraryView(leaf, libraryRepository),
+			(leaf) => new LibraryView(leaf, loadLibraryUseCase),
 		);
 
 		this.addRibbonIcon('library-big', 'Obsidian shelf', async () => {

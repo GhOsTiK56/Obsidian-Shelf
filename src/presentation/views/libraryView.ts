@@ -1,14 +1,15 @@
 import { ItemView, WorkspaceLeaf } from 'obsidian';
-import { LibraryRepository } from './libraryRepository';
+import { LoadLibrary } from '../../application/use-cases/loadLibrary';
+import { LibraryFilter } from '../../application/dto/libraryFilter';
 
 export const LIBRARY_VIEW = 'library-view';
 
 export class LibraryView extends ItemView {
-	public constructor(
-		leaf: WorkspaceLeaf,
-		private readonly libraryRepository: LibraryRepository,
-	) {
+	private loadLibraryUseCase: LoadLibrary;
+
+	public constructor(leaf: WorkspaceLeaf, loadLibraryUseCase: LoadLibrary) {
 		super(leaf);
+		this.loadLibraryUseCase = loadLibraryUseCase;
 	}
 
 	public getViewType() {
@@ -24,7 +25,10 @@ export class LibraryView extends ItemView {
 		container.empty();
 		container.addClass('container');
 
-		const mediaItems = this.libraryRepository.getLibrary();
+    const filterParams = new LibraryFilter();
+    filterParams.folder = 'Cards/Books'
+
+		const mediaItems = await this.loadLibraryUseCase.execute(filterParams);
 
 		for (const mediaItem of mediaItems)
 			if (mediaItem.poster) this.createCard(container, mediaItem.poster);

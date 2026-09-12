@@ -1,13 +1,5 @@
 import { App, PluginSettingTab, SettingDefinitionItem } from 'obsidian';
-import MyPlugin from './main';
-
-export interface ObsidianShelfSettings {
-	mySetting: string;
-}
-
-export const DEFAULT_SETTINGS: ObsidianShelfSettings = {
-	mySetting: 'default',
-};
+import MyPlugin from '../../main';
 
 export class ObsidianShelfSettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
