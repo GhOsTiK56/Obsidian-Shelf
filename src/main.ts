@@ -1,18 +1,23 @@
 import { Notice, Plugin } from 'obsidian';
+import { ObsidianLibraryRepository } from './infrastructure/obsidian/obsidianLibraryRepository';
+import { LoadLibrary } from './application/use-cases/loadLibrary';
+import { LIBRARY_VIEW, LibraryView } from './presentation/views/libraryView';
 import {
 	DEFAULT_SETTINGS,
-	ObsidianShelfSettings,
-} from './infrastructure/obsidian/settings';
-import { LIBRARY_VIEW, LibraryView } from './presentation/views/libraryView';
-import { ObsidianLibraryRepository } from './infrastructure/obsidian/obsidianLibraryRepository';
-import { ObsidianShelfSettingTab } from './presentation/views/obsidianShelfSettingTab';
-import { LoadLibrary } from './application/use-cases/loadLibrary';
+	PluginSettings,
+	SettingsTab,
+} from './presentation/views/SettingsTab';
 
 export default class ObsidianShelf extends Plugin {
-	settings!: ObsidianShelfSettings;
+	settings!: PluginSettings;
 
 	async onload() {
 		await this.loadSettings();
+
+		this.addSettingTab(new SettingsTab(this.app, this));
+
+		await this.addRibbon();
+
 		const libraryRepository = new ObsidianLibraryRepository(
 			this.app.vault,
 			this.app.metadataCache,
@@ -22,9 +27,14 @@ export default class ObsidianShelf extends Plugin {
 
 		this.registerView(
 			LIBRARY_VIEW,
-			(leaf) => new LibraryView(leaf, loadLibraryUseCase),
+			(leaf) => new LibraryView(leaf, loadLibraryUseCase, () => this.settings),
 		);
 
+		const statusBarItemEl = this.addStatusBarItem();
+		statusBarItemEl.setText('Obsidian shelf status bar text');
+	}
+
+	public async addRibbon() {
 		this.addRibbonIcon('library-big', 'Obsidian shelf', async () => {
 			const leaf = this.app.workspace.getLeaf('tab');
 
@@ -36,19 +46,15 @@ export default class ObsidianShelf extends Plugin {
 			await this.app.workspace.revealLeaf(leaf);
 			new Notice('Obsidian shelf is now open!');
 		});
-
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Obsidian shelf status bar text');
-
-		this.addSettingTab(new ObsidianShelfSettingTab(this.app, this));
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<ObsidianShelfSettings>,
-		);
+		const loadedData = (await this.loadData()) as Partial<PluginSettings>;
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedData);
+
+		if (!this.settings.BooksPath || this.settings.BooksPath.trim() === '') {
+			this.settings.BooksPath = DEFAULT_SETTINGS.BooksPath;
+		}
 	}
 
 	async saveSettings() {
