@@ -1,10 +1,8 @@
 import { MetadataCache, TFile, TFolder, Vault } from 'obsidian';
-import { MetadataMapper } from './metadataMapper';
-import { MediaItem } from '../../domain/entities/mediaItem';
-import { LibraryRepository } from '../../domain/repositories/libraryRepository';
-import { LibraryFilter } from '../../domain/dto/libraryFilter';
+import { MetadataMapper } from './metadata_mapper';
+import { MediaItem } from '../entities/media_item';
 
-export class ObsidianLibraryRepository implements LibraryRepository {
+export class LibraryRepository {
 	private readonly vault: Vault;
 	private readonly metadataCache: MetadataCache;
 
@@ -12,10 +10,10 @@ export class ObsidianLibraryRepository implements LibraryRepository {
 		this.vault = vault;
 		this.metadataCache = metadataCache;
 	}
-	async getAll(filter: LibraryFilter): Promise<MediaItem[]> {
-		if (!filter.folder) return [];
+	async getAll(inputFolder: string): Promise<MediaItem[]> {
+		if (!inputFolder) return [];
 
-		const folder = this.vault.getAbstractFileByPath(filter.folder);
+		const folder = this.vault.getAbstractFileByPath(inputFolder);
 
 		if (!(folder instanceof TFolder)) {
 			return [];
@@ -45,9 +43,5 @@ export class ObsidianLibraryRepository implements LibraryRepository {
 		}
 
 		return files;
-	}
-
-	refresh(): Promise<void> {
-		throw new Error('Method not implemented.');
 	}
 }

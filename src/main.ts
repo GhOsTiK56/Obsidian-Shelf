@@ -1,12 +1,11 @@
 import { Notice, Plugin } from 'obsidian';
-import { ObsidianLibraryRepository } from './infrastructure/obsidian/obsidianLibraryRepository';
-import { LoadLibrary } from './application/use-cases/loadLibrary';
-import { LIBRARY_VIEW, LibraryView } from './presentation/views/libraryView';
 import {
 	DEFAULT_SETTINGS,
 	PluginSettings,
 	SettingsTab,
-} from './presentation/views/SettingsTab';
+} from './views/settings_tab';
+import { LIBRARY_VIEW, LibraryView } from './views/library_view';
+import { LibraryRepository } from './infrastructure/library_repository';
 
 export default class ObsidianShelf extends Plugin {
 	settings!: PluginSettings;
@@ -18,16 +17,14 @@ export default class ObsidianShelf extends Plugin {
 
 		await this.addRibbon();
 
-		const libraryRepository = new ObsidianLibraryRepository(
+		const libraryRepository = new LibraryRepository(
 			this.app.vault,
 			this.app.metadataCache,
 		);
 
-		const loadLibraryUseCase = new LoadLibrary(libraryRepository);
-
 		this.registerView(
 			LIBRARY_VIEW,
-			(leaf) => new LibraryView(leaf, loadLibraryUseCase, () => this.settings),
+			(leaf) => new LibraryView(leaf, libraryRepository, () => this.settings),
 		);
 
 		const statusBarItemEl = this.addStatusBarItem();

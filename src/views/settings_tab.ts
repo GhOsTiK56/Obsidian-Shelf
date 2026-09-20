@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, SettingDefinitionItem } from 'obsidian';
-import ObsidianShelf from '../../main';
+import ObsidianShelf from '../main';
 
 export interface PluginSettings {
 	BooksPath: string;

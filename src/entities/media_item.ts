@@ -1,27 +1,4 @@
-export type MediaItemProps = {
-	author?: string;
-	poster?: string;
-	rating?: number;
-	status: Status;
-	tags?: string[];
-	title: string;
-	type?: MediaType;
-	year?: number;
-	path: string;
-};
-
-export enum MediaType {
-	BOOK = 'book',
-	MOVIE = 'movie',
-	TV_SERIES = 'tv_series',
-	ANIME = 'anime',
-	MANGA = 'manga',
-}
-
-export enum Status {
-	PLANNED = 'planned',
-	COMPLETED = 'completed',
-}
+import { type MediaItemProps, MediaType, Status } from '../common';
 
 export class MediaItem {
 	author?: string;

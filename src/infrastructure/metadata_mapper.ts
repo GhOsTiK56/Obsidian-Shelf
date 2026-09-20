@@ -1,10 +1,6 @@
 import { FrontMatterCache, TFile } from 'obsidian';
-import {
-	MediaItem,
-	MediaItemProps,
-	MediaType,
-	Status,
-} from '../../domain/entities/mediaItem';
+import { MediaItemProps, MediaType, Status } from '../common';
+import { MediaItem } from '../entities/media_item';
 
 export class MetadataMapper {
 	static mapMetadata(
