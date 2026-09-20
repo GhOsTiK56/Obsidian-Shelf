@@ -20,7 +20,7 @@ export class MetadataMapper {
 			rating: this.parseNumber(frontmatter?.['rating']),
 			year: this.parseNumber(frontmatter?.['year']),
 			tags: this.parseStringArray(frontmatter?.['tags']),
-			path: this.parseString(file.basename),
+			path: file.path,
 		};
 
 		return new MediaItem(props);

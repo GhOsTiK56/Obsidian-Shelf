@@ -3,6 +3,5 @@ import { MediaItem } from '../entities/mediaItem';
 
 export interface LibraryRepository {
 	getAll(folder: LibraryFilter): Promise<MediaItem[]>;
-	getByPath(): Promise<MediaItem>;
 	refresh(): Promise<void>;
 }

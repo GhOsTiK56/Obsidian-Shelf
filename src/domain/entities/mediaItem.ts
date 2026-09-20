@@ -7,7 +7,7 @@ export type MediaItemProps = {
 	title: string;
 	type?: MediaType;
 	year?: number;
-	path?: string;
+	path: string;
 };
 
 export enum MediaType {
@@ -32,7 +32,7 @@ export class MediaItem {
 	title: string;
 	type?: MediaType;
 	year?: number;
-	path?: string;
+	path: string;
 
 	constructor(props: MediaItemProps) {
 		this.author = props.author;

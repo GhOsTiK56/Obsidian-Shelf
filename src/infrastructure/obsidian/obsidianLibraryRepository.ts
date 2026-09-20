@@ -47,9 +47,6 @@ export class ObsidianLibraryRepository implements LibraryRepository {
 		return files;
 	}
 
-	getByPath(): Promise<MediaItem> {
-		throw new Error('Method not implemented.');
-	}
 	refresh(): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
