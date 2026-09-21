@@ -12,33 +12,6 @@
 	align-items: center;
 }
 
-.select {
-	margin-bottom: 0;
-	padding: 6px 12px;
-	height: 38px;
-	line-height: 1.4;
-	box-sizing: border-box;
-	border-radius: 6px;
-	border: 1px solid var(--background-modifier-border);
-	background-color: var(--background-primary);
-	color: var(--text-normal);
-	font-size: 0.9rem;
-	cursor: pointer;
-	outline: none;
-	transition:
-		border-color 0.2s ease,
-		background-color 0.2s ease;
-}
-
-.select:hover {
-	border-color: var(--interactive-accent);
-	background-color: var(--background-secondary-alt);
-}
-
-.select:focus {
-	border-color: var(--interactive-accent);
-}
-
 .shelf-card {
 	position: relative;
 	width: 100%;

@@ -5,8 +5,9 @@ import {
 	SettingsTab,
 } from './views/settings_tab';
 import { LIBRARY_VIEW, LibraryView } from './views/library_view';
-import { LibraryRepository } from './infrastructure/library_repository';
 import { PosterResolver } from './infrastructure/poster_resolver';
+import { LibraryService } from './services/library_service';
+import { LibraryRepository } from './repositories/library_repository';
 
 export default class ObsidianShelf extends Plugin {
 	settings!: PluginSettings;
@@ -28,15 +29,16 @@ export default class ObsidianShelf extends Plugin {
 			() => this.settings,
 		);
 
+		const libraryService = new LibraryService(
+			libraryRepository,
+			posterResolver,
+      this.app.vault,
+			() => this.settings,
+		);
+
 		this.registerView(
 			LIBRARY_VIEW,
-			(leaf) =>
-				new LibraryView(
-					leaf,
-					libraryRepository,
-					() => this.settings,
-					posterResolver,
-				),
+			(leaf) => new LibraryView(leaf, libraryService),
 		);
 
 		const statusBarItemEl = this.addStatusBarItem();

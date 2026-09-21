@@ -1,6 +1,6 @@
 import { MetadataCache, TFile, TFolder, Vault } from 'obsidian';
-import { MetadataMapper } from './metadata_mapper';
 import { MediaItem } from '../entities/media_item';
+import { MetadataMapper } from '../infrastructure/metadata_mapper';
 
 export class LibraryRepository {
 	private readonly vault: Vault;
