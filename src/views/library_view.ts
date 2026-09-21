@@ -1,6 +1,8 @@
 import {
+	debounce,
 	DropdownComponent,
 	ItemView,
+	TFile,
 	ViewStateResult,
 	WorkspaceLeaf,
 } from 'obsidian';
@@ -21,11 +23,21 @@ interface LibraryViewState {
 
 export class LibraryView extends ItemView {
 	private readonly libraryService: LibraryService;
+
 	private gridContainer!: HTMLElement;
+
 	private state: LibraryViewState = {
 		category: MediaType.TV_SERIES,
 		sortBy: SortOption.TAGS_YEAR,
 	};
+
+	private debouncedUpdateContent = debounce(
+		async () => {
+			await this.updateContent();
+		},
+		300,
+		true,
+	);
 
 	public constructor(leaf: WorkspaceLeaf, libraryService: LibraryService) {
 		super(leaf);
@@ -44,7 +56,47 @@ export class LibraryView extends ItemView {
 			cls: 'grid-container',
 		});
 
+		this.registerWatchers();
+
 		await this.updateContent();
+	}
+
+	private registerWatchers(): void {
+		this.registerEvent(
+			this.app.metadataCache.on('changed', (file) => {
+				if (this.isRelevantFile(file)) {
+					this.debouncedUpdateContent();
+				}
+			}),
+		);
+
+		this.registerEvent(
+			this.app.vault.on('create', (file) => {
+				if (file instanceof TFile && this.isRelevantFile(file)) {
+					this.debouncedUpdateContent();
+				}
+			}),
+		);
+
+		this.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				if (file.path.endsWith('.md')) {
+					this.debouncedUpdateContent();
+				}
+			}),
+		);
+
+		this.registerEvent(
+			this.app.vault.on('rename', (file) => {
+				if (file instanceof TFile && this.isRelevantFile(file)) {
+					this.debouncedUpdateContent();
+				}
+			}),
+		);
+	}
+
+	private isRelevantFile(file: TFile): boolean {
+		return file.extension === 'md';
 	}
 
 	public getViewType() {
