@@ -11,7 +11,6 @@ export class MetadataMapper {
 			title: this.parseString(frontmatter?.['title']) ?? file.basename,
 			status: this.parseStatus(frontmatter?.['status']),
 			author: this.parseString(frontmatter?.['author']),
-			poster: this.parseString(frontmatter?.['poster']),
 			type: this.parseType(frontmatter?.['type']),
 			rating: this.parseNumber(frontmatter?.['rating']),
 			year: this.parseNumber(frontmatter?.['year']),

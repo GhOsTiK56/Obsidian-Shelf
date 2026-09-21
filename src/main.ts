@@ -6,6 +6,7 @@ import {
 } from './views/settings_tab';
 import { LIBRARY_VIEW, LibraryView } from './views/library_view';
 import { LibraryRepository } from './infrastructure/library_repository';
+import { PosterResolver } from './infrastructure/poster_resolver';
 
 export default class ObsidianShelf extends Plugin {
 	settings!: PluginSettings;
@@ -22,9 +23,17 @@ export default class ObsidianShelf extends Plugin {
 			this.app.metadataCache,
 		);
 
+		const posterResolver = new PosterResolver(this.app.vault);
+
 		this.registerView(
 			LIBRARY_VIEW,
-			(leaf) => new LibraryView(leaf, libraryRepository, () => this.settings),
+			(leaf) =>
+				new LibraryView(
+					leaf,
+					libraryRepository,
+					() => this.settings,
+					posterResolver,
+				),
 		);
 
 		const statusBarItemEl = this.addStatusBarItem();

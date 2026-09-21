@@ -2,7 +2,6 @@ import { type MediaItemProps, MediaType, Status } from '../common';
 
 export class MediaItem {
 	author?: string;
-	poster?: string;
 	rating?: number;
 	status: Status;
 	tags?: string[];
@@ -13,7 +12,6 @@ export class MediaItem {
 
 	constructor(props: MediaItemProps) {
 		this.author = props.author;
-		this.poster = props.poster;
 		this.rating = props.rating;
 		this.status = props.status;
 		this.tags = props.tags;

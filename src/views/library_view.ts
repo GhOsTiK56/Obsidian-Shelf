@@ -2,21 +2,25 @@ import { ItemView, TFile, WorkspaceLeaf } from 'obsidian';
 import { DEFAULT_SETTINGS, PluginSettings } from './settings_tab';
 import { MediaItem } from '../entities/media_item';
 import { LibraryRepository } from '../infrastructure/library_repository';
+import { PosterResolver } from '../infrastructure/poster_resolver';
 
 export const LIBRARY_VIEW = 'library-view';
 
 export class LibraryView extends ItemView {
-	private libraryRepository: LibraryRepository;
-	private getSettings: () => PluginSettings;
+	private readonly libraryRepository: LibraryRepository;
+	private readonly getSettings: () => PluginSettings;
+	private readonly posterResolver: PosterResolver;
 
 	public constructor(
 		leaf: WorkspaceLeaf,
 		libraryRepository: LibraryRepository,
 		getSettings: () => PluginSettings,
+		posterResolver: PosterResolver,
 	) {
 		super(leaf);
 		this.libraryRepository = libraryRepository;
 		this.getSettings = getSettings;
+		this.posterResolver = posterResolver;
 	}
 
 	public getViewType() {
@@ -34,30 +38,32 @@ export class LibraryView extends ItemView {
 
 		const settings = this.getSettings();
 
-		const folderFilter = settings.BooksPath?.trim()
-			? settings.BooksPath
-			: DEFAULT_SETTINGS.BooksPath;
+		const folderFilter = settings.TV_SeriesPath?.trim()
+			? settings.TV_SeriesPath
+			: DEFAULT_SETTINGS.TV_SeriesPath;
 
 		const mediaItems = await this.libraryRepository.getAll(folderFilter);
 
-		for (const mediaItem of mediaItems)
-			if (mediaItem.poster) this.createCard(container, mediaItem);
+		for (const mediaItem of mediaItems) {
+			this.createCard(container, mediaItem);
+		}
 	}
 
-	private createCard(
-		container: HTMLElement,
-		item: MediaItem,
-	): HTMLImageElement {
+	private createCard(container: HTMLElement, item: MediaItem): void {
+		const poster = this.posterResolver.resolve(item);
+
+		if (!poster) return;
+
 		const img = container.createEl('img', {
 			cls: 'card',
-			attr: { src: item.poster!, loading: 'lazy' },
 		});
+
+		img.src = this.app.vault.getResourcePath(poster);
+		img.loading = 'lazy';
 
 		img.addEventListener('click', () => {
 			void this.openFile(item.path);
 		});
-
-		return img;
 	}
 
 	private async openFile(path: string): Promise<void> {
