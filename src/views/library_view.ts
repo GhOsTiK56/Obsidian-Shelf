@@ -4,13 +4,19 @@ import {
 	ViewStateResult,
 	WorkspaceLeaf,
 } from 'obsidian';
-import { MEDIA_TYPE_MAP, MediaType } from '../common';
+import {
+	MEDIA_TYPE_MAP,
+	MediaType,
+	SORT_OPTION_MAP,
+	SortOption,
+} from '../common';
 import { LibraryService, ShelfCardModel } from '../services/library_service';
 
 export const LIBRARY_VIEW = 'library-view';
 
 interface LibraryViewState {
 	category: MediaType;
+	sortBy: SortOption;
 }
 
 export class LibraryView extends ItemView {
@@ -18,6 +24,7 @@ export class LibraryView extends ItemView {
 	private gridContainer!: HTMLElement;
 	private state: LibraryViewState = {
 		category: MediaType.TV_SERIES,
+		sortBy: SortOption.TAGS_YEAR,
 	};
 
 	public constructor(leaf: WorkspaceLeaf, libraryService: LibraryService) {
@@ -31,7 +38,7 @@ export class LibraryView extends ItemView {
 		root.empty();
 		root.addClass('container');
 
-		this.renderCategorySelector(root);
+		this.renderControlsBar(root);
 
 		this.gridContainer = root.createDiv({
 			cls: 'grid-container',
@@ -51,6 +58,7 @@ export class LibraryView extends ItemView {
 	public getState(): Record<string, unknown> {
 		return {
 			category: this.state.category,
+			sortBy: this.state.sortBy,
 		};
 	}
 
@@ -58,10 +66,15 @@ export class LibraryView extends ItemView {
 		state: unknown,
 		result: ViewStateResult,
 	): Promise<void> {
-		if (state && typeof state === 'object' && 'category' in state) {
-			const savedCategory = (state as Record<string, unknown>).category;
-			if (Object.values(MediaType).includes(savedCategory as MediaType)) {
-				this.state.category = savedCategory as MediaType;
+		if (state && typeof state === 'object') {
+			const savedState = state as Record<string, unknown>;
+
+			if (Object.values(MediaType).includes(savedState.category as MediaType)) {
+				this.state.category = savedState.category as MediaType;
+			}
+
+			if (Object.values(SortOption).includes(savedState.sortBy as SortOption)) {
+				this.state.sortBy = savedState.sortBy as SortOption;
 			}
 		}
 
@@ -72,24 +85,34 @@ export class LibraryView extends ItemView {
 		}
 	}
 
-	private renderCategorySelector(container: HTMLElement) {
-		const wrapper = container.createDiv({
-			cls: 'controls-wrapper',
-		});
+	private renderControlsBar(container: HTMLElement) {
+		const wrapper = container.createDiv({ cls: 'controls-wrapper' });
 
-		const options: Record<string, string> = {};
+		const categoryOptions: Record<string, string> = {};
 		for (const [key, { label, emoji }] of Object.entries(MEDIA_TYPE_MAP)) {
-			options[key] = `${emoji} ${label}`;
+			categoryOptions[key] = `${emoji} ${label}`;
 		}
 
 		new DropdownComponent(wrapper)
-			.addOptions(options)
+			.addOptions(categoryOptions)
 			.setValue(this.state.category)
 			.onChange(async (value) => {
 				this.state.category = value as MediaType;
-
 				this.app.workspace.requestSaveLayout();
+				await this.updateContent();
+			});
 
+		const sortOptions: Record<string, string> = {};
+		for (const [key, { label, emoji }] of Object.entries(SORT_OPTION_MAP)) {
+			sortOptions[key] = `${emoji} ${label}`;
+		}
+
+		new DropdownComponent(wrapper)
+			.addOptions(sortOptions)
+			.setValue(this.state.sortBy)
+			.onChange(async (value) => {
+				this.state.sortBy = value as SortOption;
+				this.app.workspace.requestSaveLayout();
 				await this.updateContent();
 			});
 	}
@@ -97,7 +120,10 @@ export class LibraryView extends ItemView {
 	private async updateContent() {
 		this.gridContainer.empty();
 
-		const cards = await this.libraryService.getShelfCards(this.state.category);
+		const cards = await this.libraryService.getShelfCards(
+			this.state.category,
+			this.state.sortBy,
+		);
 
 		for (const card of cards) {
 			this.createCard(this.gridContainer, card);
