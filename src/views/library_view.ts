@@ -11,6 +11,7 @@ import {
 	MediaType,
 	SORT_OPTION_MAP,
 	SortOption,
+    STATUS_MAP,
 } from '../common';
 import { LibraryService, ShelfCardModel } from '../services/library_service';
 
@@ -183,17 +184,51 @@ export class LibraryView extends ItemView {
 	}
 
 	private createCard(container: HTMLElement, cardModel: ShelfCardModel): void {
+		const item = cardModel.item;
 		const card = container.createDiv({ cls: 'shelf-card' });
 
-		const img = card.createEl('img', {
-			cls: 'shelf-card__image',
-		});
+		const posterWrapper = card.createDiv({ cls: 'shelf-card__poster-wrapper' });
 
+		const img = posterWrapper.createEl('img', { cls: 'shelf-card__image' });
 		img.src = cardModel.posterPath;
 		img.loading = 'lazy';
 
+		if (item.status && STATUS_MAP[item.status]) {
+			const config = STATUS_MAP[item.status];
+			posterWrapper.createDiv({
+				cls: `shelf-card__badge shelf-card__badge--status ${config.colorClass}`,
+				text: config.label,
+			});
+		}
+
+		if (item.rating) {
+			posterWrapper.createDiv({
+				cls: 'shelf-card__badge shelf-card__badge--rating',
+				text: `⭐ ${item.rating}`,
+			});
+		}
+
+		const info = card.createDiv({ cls: 'shelf-card__info' });
+
+		info.createDiv({
+			cls: 'shelf-card__title',
+			text: item.title,
+			attr: { title: item.title },
+		});
+
+		const metaParts: string[] = [];
+		if (item.year) metaParts.push(item.year.toString());
+		if (item.author) metaParts.push(item.author);
+
+		if (metaParts.length > 0) {
+			info.createDiv({
+				cls: 'shelf-card__meta',
+				text: metaParts.join(' • '),
+			});
+		}
+
 		card.addEventListener('click', () => {
-			void this.openFile(cardModel.item.path);
+			void this.openFile(item.path);
 		});
 	}
 
