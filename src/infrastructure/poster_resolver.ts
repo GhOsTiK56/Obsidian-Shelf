@@ -1,12 +1,20 @@
 import { TFile, Vault } from 'obsidian';
 import { MediaItem } from '../entities/media_item';
+import { PluginSettings } from '../views/settings_tab';
 
 export class PosterResolver {
-	private readonly postersFolder = 'Cards/posters';
+	private readonly getSettings: () => PluginSettings;
 
-	public constructor(private readonly vault: Vault) {}
+	public constructor(
+		private readonly vault: Vault,
+		getSettings: () => PluginSettings,
+	) {
+		this.getSettings = getSettings;
+	}
 
 	public resolve(item: MediaItem): TFile | undefined {
+		const settings = this.getSettings();
+
 		if (!item.type) {
 			return undefined;
 		}
@@ -17,7 +25,7 @@ export class PosterResolver {
 			return undefined;
 		}
 
-		const posterPath = `${this.postersFolder}/${item.type}/${markdown.basename}.webp`;
+		const posterPath = `${settings.PostersPath}/${item.type}/${markdown.basename}.webp`;
 
 		const poster = this.vault.getAbstractFileByPath(posterPath);
 

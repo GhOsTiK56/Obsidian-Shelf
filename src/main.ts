@@ -23,7 +23,10 @@ export default class ObsidianShelf extends Plugin {
 			this.app.metadataCache,
 		);
 
-		const posterResolver = new PosterResolver(this.app.vault);
+		const posterResolver = new PosterResolver(
+			this.app.vault,
+			() => this.settings,
+		);
 
 		this.registerView(
 			LIBRARY_VIEW,

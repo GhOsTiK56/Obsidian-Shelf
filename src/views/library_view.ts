@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS, PluginSettings } from './settings_tab';
 import { MediaItem } from '../entities/media_item';
 import { LibraryRepository } from '../infrastructure/library_repository';
 import { PosterResolver } from '../infrastructure/poster_resolver';
+import { MediaType } from '../common';
 
 export const LIBRARY_VIEW = 'library-view';
 
@@ -10,6 +11,12 @@ export class LibraryView extends ItemView {
 	private readonly libraryRepository: LibraryRepository;
 	private readonly getSettings: () => PluginSettings;
 	private readonly posterResolver: PosterResolver;
+
+	private gridContainer!: HTMLElement;
+
+	private state = {
+		category: MediaType.TV_SERIES,
+	};
 
 	public constructor(
 		leaf: WorkspaceLeaf,
@@ -32,20 +39,83 @@ export class LibraryView extends ItemView {
 	}
 
 	public async onOpen() {
-		const container = this.contentEl;
-		container.empty();
-		container.addClass('container');
+		const root = this.contentEl;
 
+		root.empty();
+		root.addClass('container');
+
+		this.getCategorySelector(root);
+
+		this.gridContainer = root.createDiv({
+			cls: 'grid-container',
+		});
+
+		await this.updateContent();
+	}
+
+	private getCategorySelector(container: HTMLElement) {
+		const categoryOptions = [
+			{ value: MediaType.BOOK, label: '📚 Books' },
+			{ value: MediaType.MOVIE, label: '🎬 Movies' },
+			{ value: MediaType.TV_SERIES, label: '📺 TV Series' },
+			{ value: MediaType.ANIME, label: '⛩️ Anime' },
+			{ value: MediaType.MANGA, label: '📖 Manga' },
+		];
+
+		const wrapper = container.createDiv({
+			cls: 'controls-wrapper',
+		});
+
+		const select = wrapper.createEl('select', {
+			cls: 'select',
+		});
+
+		categoryOptions.forEach(({ value, label }) => {
+			const option = select.createEl('option', {
+				text: label,
+			});
+
+			option.value = value;
+		});
+
+		select.value = this.state.category;
+
+		select.addEventListener('change', () => {
+			this.state.category = select.value as MediaType;
+			void this.updateContent();
+		});
+	}
+
+	private getFolderByCategory(category: MediaType): string {
 		const settings = this.getSettings();
 
-		const folderFilter = settings.TV_SeriesPath?.trim()
-			? settings.TV_SeriesPath
-			: DEFAULT_SETTINGS.TV_SeriesPath;
+		switch (category) {
+			case MediaType.BOOK:
+				return settings.BooksPath || DEFAULT_SETTINGS.BooksPath;
 
-		const mediaItems = await this.libraryRepository.getAll(folderFilter);
+			case MediaType.MOVIE:
+				return settings.MoviesPath || DEFAULT_SETTINGS.MoviesPath;
 
-		for (const mediaItem of mediaItems) {
-			this.createCard(container, mediaItem);
+			case MediaType.TV_SERIES:
+				return settings.TV_SeriesPath || DEFAULT_SETTINGS.TV_SeriesPath;
+
+			case MediaType.ANIME:
+				return settings.AnimePath || DEFAULT_SETTINGS.AnimePath;
+
+			case MediaType.MANGA:
+				return settings.MangaPath || DEFAULT_SETTINGS.MangaPath;
+		}
+	}
+
+	private async updateContent() {
+		this.gridContainer.empty();
+
+		const folder = this.getFolderByCategory(this.state.category);
+
+		const mediaItems = await this.libraryRepository.getAll(folder);
+
+		for (const item of mediaItems) {
+			this.createCard(this.gridContainer, item);
 		}
 	}
 
@@ -54,14 +124,16 @@ export class LibraryView extends ItemView {
 
 		if (!poster) return;
 
-		const img = container.createEl('img', {
-			cls: 'card',
+		const card = container.createDiv({ cls: 'shelf-card' });
+
+		const img = card.createEl('img', {
+			cls: 'shelf-card__image',
 		});
 
 		img.src = this.app.vault.getResourcePath(poster);
 		img.loading = 'lazy';
 
-		img.addEventListener('click', () => {
+		card.addEventListener('click', () => {
 			void this.openFile(item.path);
 		});
 	}

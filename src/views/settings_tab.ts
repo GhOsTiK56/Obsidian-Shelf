@@ -2,6 +2,7 @@ import { App, PluginSettingTab, SettingDefinitionItem } from 'obsidian';
 import ObsidianShelf from '../main';
 
 export interface PluginSettings {
+	PostersPath: string;
 	BooksPath: string;
 	MoviesPath: string;
 	TV_SeriesPath: string;
@@ -10,6 +11,7 @@ export interface PluginSettings {
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
+	PostersPath: 'Posters',
 	BooksPath: 'Books',
 	MoviesPath: 'Movies',
 	TV_SeriesPath: 'TV Series',
@@ -29,6 +31,7 @@ export class SettingsTab extends PluginSettingTab {
 		name: string;
 		key: keyof PluginSettings;
 	}> = [
+		{ name: 'Posters', key: 'PostersPath' },
 		{ name: 'Books', key: 'BooksPath' },
 		{ name: 'Movies', key: 'MoviesPath' },
 		{ name: 'TV Series', key: 'TV_SeriesPath' },

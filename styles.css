@@ -1,4 +1,80 @@
-.container {
+.grid-container {
 	display: grid;
-	grid-template-columns: auto auto auto;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 16px;
+}
+
+.controls-wrapper {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 20px;
+	align-items: center;
+}
+
+.select {
+	margin-bottom: 0;
+	padding: 6px 12px;
+	height: 38px;
+	line-height: 1.4;
+	box-sizing: border-box;
+	border-radius: 6px;
+	border: 1px solid var(--background-modifier-border);
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9rem;
+	cursor: pointer;
+	outline: none;
+	transition:
+		border-color 0.2s ease,
+		background-color 0.2s ease;
+}
+
+.select:hover {
+	border-color: var(--interactive-accent);
+	background-color: var(--background-secondary-alt);
+}
+
+.select:focus {
+	border-color: var(--interactive-accent);
+}
+
+.shelf-card {
+	position: relative;
+	width: 100%;
+	padding: 0 !important;
+	margin: 0 !important;
+	overflow: hidden;
+	border-radius: 10px;
+	border: 1px solid var(--background-modifier-border);
+	cursor: pointer;
+	background: transparent;
+	line-height: 0;
+	transition:
+		transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+		box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+		border-color 0.25s ease;
+}
+
+.shelf-card:hover {
+	transform: translateY(-4px);
+	box-shadow: var(--shadow-l, 0 10px 20px rgba(0, 0, 0, 0.2));
+	border-color: var(--interactive-accent);
+}
+
+.shelf-card__image {
+	width: 100% !important;
+	height: auto !important;
+	display: block !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	max-width: 100% !important;
+	max-height: none !important;
+	border-radius: 0 !important;
+	object-fit: cover !important;
+	transition: transform 0.3s ease;
+}
+
+.shelf-card:hover .shelf-card__image {
+	transform: scale(1.03);
 }
