@@ -1,6 +1,7 @@
 import {
 	debounce,
 	DropdownComponent,
+	SearchComponent,
 	ItemView,
 	TFile,
 	ViewStateResult,
@@ -11,7 +12,8 @@ import {
 	MediaType,
 	SORT_OPTION_MAP,
 	SortOption,
-    STATUS_MAP,
+	Status,
+	STATUS_MAP,
 } from '../common';
 import { LibraryService, ShelfCardModel } from '../services/library_service';
 
@@ -20,6 +22,8 @@ export const LIBRARY_VIEW = 'library-view';
 interface LibraryViewState {
 	category: MediaType;
 	sortBy: SortOption;
+	statusFilter: Status | 'all';
+	searchQuery: string;
 }
 
 export class LibraryView extends ItemView {
@@ -30,6 +34,8 @@ export class LibraryView extends ItemView {
 	private state: LibraryViewState = {
 		category: MediaType.TV_SERIES,
 		sortBy: SortOption.TAGS_YEAR,
+		statusFilter: 'all',
+		searchQuery: '',
 	};
 
 	private debouncedUpdateContent = debounce(
@@ -112,6 +118,8 @@ export class LibraryView extends ItemView {
 		return {
 			category: this.state.category,
 			sortBy: this.state.sortBy,
+			statusFilter: this.state.statusFilter,
+			searchQuery: this.state.searchQuery,
 		};
 	}
 
@@ -129,6 +137,17 @@ export class LibraryView extends ItemView {
 			if (Object.values(SortOption).includes(savedState.sortBy as SortOption)) {
 				this.state.sortBy = savedState.sortBy as SortOption;
 			}
+
+			if (
+				savedState.statusFilter === 'all' ||
+				Object.values(Status).includes(savedState.statusFilter as Status)
+			) {
+				this.state.statusFilter = savedState.statusFilter as Status | 'all';
+			}
+
+			if (typeof savedState.searchQuery === 'string') {
+				this.state.searchQuery = savedState.searchQuery;
+			}
 		}
 
 		await super.setState(state, result);
@@ -140,6 +159,29 @@ export class LibraryView extends ItemView {
 
 	private renderControlsBar(container: HTMLElement) {
 		const wrapper = container.createDiv({ cls: 'controls-wrapper' });
+
+		new SearchComponent(wrapper)
+			.setPlaceholder('Search title or tags...')
+			.setValue(this.state.searchQuery)
+			.onChange((value) => {
+				this.state.searchQuery = value;
+				this.app.workspace.requestSaveLayout();
+				this.debouncedUpdateContent();
+			});
+
+		const statusOptions: Record<string, string> = { all: '🗂️ All Statuses' };
+		for (const [key, { label, emoji }] of Object.entries(STATUS_MAP)) {
+			statusOptions[key] = `${emoji} ${label}`;
+		}
+
+		new DropdownComponent(wrapper)
+			.addOptions(statusOptions)
+			.setValue(this.state.statusFilter)
+			.onChange(async (value) => {
+				this.state.statusFilter = value as Status | 'all';
+				this.app.workspace.requestSaveLayout();
+				await this.updateContent();
+			});
 
 		const categoryOptions: Record<string, string> = {};
 		for (const [key, { label, emoji }] of Object.entries(MEDIA_TYPE_MAP)) {
@@ -176,6 +218,8 @@ export class LibraryView extends ItemView {
 		const cards = await this.libraryService.getShelfCards(
 			this.state.category,
 			this.state.sortBy,
+			this.state.statusFilter,
+			this.state.searchQuery,
 		);
 
 		for (const card of cards) {
@@ -197,7 +241,7 @@ export class LibraryView extends ItemView {
 			const config = STATUS_MAP[item.status];
 			posterWrapper.createDiv({
 				cls: `shelf-card__badge shelf-card__badge--status ${config.colorClass}`,
-				text: config.label,
+				text: `${config.emoji} ${config.label}`,
 			});
 		}
 

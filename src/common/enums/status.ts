@@ -8,14 +8,28 @@ export enum Status {
 export interface StatusConfig {
 	label: string;
 	colorClass: string;
+	emoji: string;
 }
 
 export const STATUS_MAP: Record<Status, StatusConfig> = {
-	[Status.PLANNED]: { label: 'Planned', colorClass: 'status--planned' },
+	[Status.COMPLETED]: {
+		label: 'Completed',
+		colorClass: 'status--completed',
+		emoji: '✅',
+	},
+	[Status.PLANNED]: {
+		label: 'Planned',
+		colorClass: 'status--planned',
+		emoji: '📌',
+	},
 	[Status.IN_PROGRESS]: {
 		label: 'In Progress',
 		colorClass: 'status--in-progress',
+		emoji: '⏳',
 	},
-	[Status.COMPLETED]: { label: 'Completed', colorClass: 'status--completed' },
-	[Status.DROPPED]: { label: 'Dropped', colorClass: 'status--dropped' },
+	[Status.DROPPED]: {
+		label: 'Dropped',
+		colorClass: 'status--dropped',
+		emoji: '❌',
+	},
 };

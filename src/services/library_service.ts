@@ -1,5 +1,5 @@
 import { Vault } from 'obsidian';
-import { MediaType, SortOption } from '../common';
+import { MediaType, SortOption, Status } from '../common';
 import { MediaItem } from '../entities/media_item';
 import { DEFAULT_SETTINGS, PluginSettings } from '../views/settings_tab';
 import { LibraryRepository } from '../repositories/library_repository';
@@ -25,15 +25,34 @@ export class LibraryService {
 	public async getShelfCards(
 		category: MediaType,
 		sortBy: SortOption,
+		statusFilter: Status | 'all' = 'all',
+		searchQuery: string = '',
 	): Promise<ShelfCardModel[]> {
 		const folderPath = this.getFolderByCategory(category);
 		const items = await this.getAllMediaItems(folderPath);
 
 		const cards: ShelfCardModel[] = [];
+		const normalizedQuery = searchQuery.toLowerCase().trim();
 
 		for (const item of items) {
-			const posterFile = this.posterResolver.resolve(item);
+			if (statusFilter !== 'all' && item.status !== statusFilter) {
+				continue;
+			}
 
+			if (normalizedQuery) {
+				const matchesTitle = item.title.toLowerCase().includes(normalizedQuery);
+				const matchesTags =
+					item.tags?.some((tag) =>
+						tag.toLowerCase().includes(normalizedQuery),
+					) ?? false;
+
+				if (!matchesTitle && !matchesTags) {
+					continue;
+				}
+			}
+
+			// 3. Резолв постера
+			const posterFile = this.posterResolver.resolve(item);
 			if (posterFile) {
 				cards.push({
 					item,
