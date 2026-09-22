@@ -72,7 +72,7 @@ The plugin has a number of settings for quick access to your library and posters
 
 ### Manual installation
 
-1. Download the latest release from the section [Releases](https://www.google.com/search?q=https://github.com/YOUR_USERNAME/obsidian-shelf/releases&utm_source=gemini).
+1. Download the latest release from the section [Releases](https://www.google.com/search?q=https://github.com/GhOsTiK56/obsidian-shelf/releases&utm_source=gemini).
 2. Unzip the archive to the `.obsidian/plugins/obsidian-shelf` folder inside your vault.
 *(Make sure that the folder contains the `main' files.js`, `manifest.json` and `styles.css`)*.
 3. Restart Obsidian.
@@ -84,7 +84,7 @@ The project is written in TypeScript using the modern Obsidian API.
 
 ```bash
 # Clone the repository
-git clone [https://github.com/YOUR_USERNAME/obsidian-shelf.git](https://github.com/YOUR_USERNAME/obsidian-shelf.git)
+git clone [https://github.com/GhOsTiK56/obsidian-shelf.git](https://github.com/GhOsTiK56/obsidian-shelf.git)
 
 # Install dependencies
 npm install
