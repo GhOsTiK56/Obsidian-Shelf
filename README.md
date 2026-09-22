@@ -9,7 +9,7 @@
 **Obsidian Shelf** — это мощный плагин для Obsidian, который превращает вашу базу знаний в красивую, удобную и визуально приятную библиотеку медиа. Отслеживайте свои книги, фильмы, сериалы, аниме и мангу с помощью стильных карточек в виде канбан-сетки.
 
 <p align="center">
-  <img src="assets/screenshots/main.png" alt="Main">
+  <img src="assets/screenshots/Main_View.png" alt="Main">
 </p>
 
 ---
