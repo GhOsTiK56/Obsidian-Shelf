@@ -6,7 +6,7 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
 </p>
 
-**Obsidian Shelf** — это мощный плагин для Obsidian, который превращает вашу базу знаний в красивую, удобную и визуально приятную библиотеку медиа. Отслеживайте свои книги, фильмы, сериалы, аниме и мангу с помощью стильных карточек в виде канбан-сетки.
+**Obsidian Shelf** — is a powerful plugin for Obsidian that turns your knowledge base into a beautiful, convenient, and visually appealing media library. Track your books, movies, TV shows, anime, and manga using stylish cards in the form of a kanban grid.
 
 <p align="center">
   <img src="assets/screenshots/Main_View.png" alt="Main">
@@ -14,13 +14,13 @@
 
 ---
 
-## ✨ Возможности
+## ✨ Opportunities
 
-- **Визуальная эстетика:** Красивая сетка карточек с поддержкой постеров, бейджей статуса и рейтинга.
-- **Поддержка различных категорий:** Раздельный учет для 📚 Книг, 🎬 Фильмов, 📺 Сериалов, ⛩️ Аниме и 📖 Манги.
-- **Умный поиск и фильтрация:** Ищите по названию или тегам, фильтруйте контент по статусам (📌 *Planned*, ⏳ *In Progress*, ✅ *Completed*, ❌ *Dropped*).
-- **Продвинутая сортировка:** Сортируйте библиотеку по рейтингу, дате выхода, названию (А-Я) или тегам.
-- **Высокая производительность:** Поддержка библиотек любого размера благодаря "ленивой загрузке" (Infinite Scroll / IntersectionObserver) — рендерится только то, что вы видите.
+- **Visual aesthetics:** A beautiful card grid with support for posters, status badges, and ratings.
+- **Support for various categories:** Separate tracking for 📚 Books, 🎬 Movies, 📺 TV series, ⛩️ Anime, and 📖 Manga.
+- **Smart search and filtering:****Search by name or tags, filter content by status (📌 *Planned*, ⏳ *In Progress*, ✅ *Completed*, ❌ *Dropped*).
+- **Advanced sorting:** Sort the library by rating, release date, name (A-Z), or tags.
+- **High performance:** Supports libraries of any size thanks to “lazy loading” (Infinite Scroll / IntersectionObserver) — only what you see is rendered.
 
 <p align="center">
   <img src="assets/screenshots/Shelf.png" alt="Shelf" />
@@ -28,83 +28,81 @@
   <img src="assets/screenshots/Statuses.png" alt="Statuses" />
 </p>
 
-## ⚙️ Настройка и использование
+## ⚙️ Configuration and Usage
 
-### 1. Настройка папок (Settings)
+### 1. Folder Configuration (Settings)
 
-В настройках плагина необходимо указать пути к папкам, где хранятся ваши заметки и постеры (по умолчанию это `Books`, `Movies`, `Posters` и т.д.).
+In the plugin settings, you must specify the paths to the folders where your notes and posters are stored (by default, these are `Books`, `Movies`, `Posters`, etc.).
 
-### 2. Добавление постеров
+### 2. Adding posters
 
-Постеры должны лежать в папке, указанной в настройках (например, `Posters/movie/название_файла.webp`). Название файла постера должно точно совпадать с названием `.md` файла заметки.
+The posters should be in the folder specified in the settings (for example, `Posters/movie/file_name.webp`). The name of the poster file must exactly match the name `.md` of the note file.
 
-### 3. Формат заметок (Frontmatter)
+### 3. Note Format (Frontmatter)
 
-Плагин автоматически читает свойства (properties/frontmatter) ваших заметок. Чтобы карточка корректно отображалась на полке, добавьте в начало `.md` файла следующие метаданные:
+The plugin automatically reads the properties (properties/frontmatter) of your notes. To ensure the card is displayed correctly on the shelf, add the following metadata to the beginning of the `.md` file:
 
 ```yaml
 ---
-title: Название произведения
-type: movie # Допустимые значения: book, movie, tv_series, anime, manga
-status: planned # Допустимые значения: planned, in_progress, completed, dropped
+title: Title of the work
+type: movie # Valid values: book, movie, tv_series, anime, manga
+status: planned # Valid values: planned, in_progress, completed, dropped
 rating: 9
 year: 2023
-author: Имя Режиссера / Автора
+author: Director / Author's name
 tags:
   - fantasy
   - sci-fi
 ---
 ```
 
-### 4. Окно Настроек
+### 4. Settings Window
 
-У плагина есть ряд настроек для быстрого доступа к вашей библиотеке и постерам:
+The plugin has a number of settings for quick access to your library and posters:
 
 <p align="center">
   <img src="assets/screenshots/Settings.png" alt="Settings">
 </p>
 
-## 🚀 Установка
+## 🚀 Installation
 
-### Через Obsidian (Community Plugins)
+### Through Obsidian (Community Plugins)
 
-*Временно недоступно, плагин находится на стадии активной разработки.*
+*Temporarily unavailable, the plugin is under active development.*
 
-### Ручная установка
+### Manual installation
 
-1. Скачайте последний релиз из раздела [Releases](https://www.google.com/search?q=https://github.com/YOUR_USERNAME/obsidian-shelf/releases&utm_source=gemini).
-2. Распакуйте архив в папку `.obsidian/plugins/obsidian-shelf` внутри вашего хранилища (vault).
-*(Убедитесь, что папка содержит файлы `main.js`, `manifest.json` и `styles.css`)*.
-3. Перезапустите Obsidian.
-4. Зайдите в **Settings** > **Community plugins**, отключите безопасный режим (Safe mode) и включите **Obsidian Shelf**.
+1. Download the latest release from the section [Releases](https://www.google.com/search?q=https://github.com/YOUR_USERNAME/obsidian-shelf/releases&utm_source=gemini).
+2. Unzip the archive to the `.obsidian/plugins/obsidian-shelf` folder inside your vault.
+*(Make sure that the folder contains the `main' files.js`, `manifest.json` and `styles.css')*.
+3. Restart Obsidian.
+4. Go to **Settings** > **Community plugins**, disable Safe mode and enable **Obsidian Shelf**.
 
-## 🛠️ Разработка (Для контрибьюторов)
+## Development (For contributors)
 
-Проект написан на TypeScript с использованием современного Obsidian API.
+The project is written in TypeScript using the modern Obsidian API.
 
 ```bash
-# Клонировать репозиторий
+# Clone the repository
 git clone [https://github.com/YOUR_USERNAME/obsidian-shelf.git](https://github.com/YOUR_USERNAME/obsidian-shelf.git)
 
-# Установить зависимости
+# Install dependencies
 npm install
 
-# Запустить режим разработчика (автоматическая сборка при изменениях)
+# Run developer mode (automatic build on changes)
 npm run dev
 
-# Собрать релизную версию
+# Build the release version
 npm run build
 
 ```
 
-## 📜 Лицензия
+## 📜 License
 
-Проект распространяется под лицензией [MIT License](https://www.google.com/search?q=LICENSE&utm_source=gemini).
+The project is distributed under the [MIT License](https://www.google.com/search?q=LICENSE&utm_source=gemini).
 
-```
-
-**Что нужно будет сделать вам перед публикацией:**
-1. Заменить все `YOUR_USERNAME` на ваш реальный никнейм на GitHub.
-2. В блоках `> 🖼️ **Скриншот ...**` удалить текст-подсказку и раскомментировать/вставить markdown-ссылку на загруженные картинки. Рекомендую создать в корне репозитория папку `assets` или `images`, положить туда картинки и ссылаться на них как `![Главный вид](images/main-view.png)`.
-
+```text
+**What you will need to do before publishing:**
+1. Replace all `YOUR_USERNAME` with your real GitHub username.
+2. In the blocks `> 🖼️ **Screenshot ...**` delete the hint text and uncomment/insert the markdown link to the uploaded images. I recommend creating a folder named `assets` or `images` at the root of the repository, placing the images there, and referencing them as `![Main View](images/main-view.png)`.
 ```
