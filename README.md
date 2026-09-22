@@ -18,7 +18,7 @@
 
 - **Visual aesthetics:** A beautiful card grid with support for posters, status badges, and ratings.
 - **Support for various categories:** Separate tracking for 📚 Books, 🎬 Movies, 📺 TV series, ⛩️ Anime, and 📖 Manga.
-- **Smart search and filtering:****Search by name or tags, filter content by status (📌 *Planned*, ⏳ *In Progress*, ✅ *Completed*, ❌ *Dropped*).
+- **Smart search and filtering:** Search by name or tags, filter content by status (📌 *Planned*, ⏳ *In Progress*, ✅ *Completed*, ❌ *Dropped*).
 - **Advanced sorting:** Sort the library by rating, release date, name (A-Z), or tags.
 - **High performance:** Supports libraries of any size thanks to “lazy loading” (Infinite Scroll / IntersectionObserver) — only what you see is rendered.
 
