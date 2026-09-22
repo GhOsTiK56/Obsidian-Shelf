@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-shelf",
 	"name": "Obsidian Shelf",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"minAppVersion": "1.13.0",
 	"description": "Visual media library for Obsidian",
 	"author": "Ghostik",
