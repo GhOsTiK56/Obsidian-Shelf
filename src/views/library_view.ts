@@ -1,8 +1,8 @@
 import {
 	debounce,
 	DropdownComponent,
-	SearchComponent,
 	ItemView,
+	SearchComponent,
 	TFile,
 	ViewStateResult,
 	WorkspaceLeaf,
@@ -30,6 +30,8 @@ export class LibraryView extends ItemView {
 	private readonly libraryService: LibraryService;
 
 	private gridContainer!: HTMLElement;
+	private sentinel!: HTMLElement;
+	private observer: IntersectionObserver | null = null;
 
 	private state: LibraryViewState = {
 		category: MediaType.TV_SERIES,
@@ -37,6 +39,10 @@ export class LibraryView extends ItemView {
 		statusFilter: 'all',
 		searchQuery: '',
 	};
+
+	private allCards: ShelfCardModel[] = [];
+	private loadedCount: number = 0;
+	private readonly BATCH_SIZE = 40;
 
 	private debouncedUpdateContent = debounce(
 		async () => {
@@ -63,9 +69,29 @@ export class LibraryView extends ItemView {
 			cls: 'grid-container',
 		});
 
+		this.sentinel = root.createDiv({ cls: 'scroll-sentinel' });
+
+		this.setupIntersectionObserver();
 		this.registerWatchers();
 
 		await this.updateContent();
+	}
+
+	private setupIntersectionObserver() {
+		const options = {
+			root: this.contentEl,
+			rootMargin: '200px',
+			threshold: 0,
+		};
+
+		this.observer = new IntersectionObserver((entries) => {
+			const firstEntry = entries[0];
+			if (firstEntry && firstEntry.isIntersecting) {
+				this.loadMoreCards();
+			}
+		}, options);
+
+		this.observer.observe(this.sentinel);
 	}
 
 	private registerWatchers(): void {
@@ -160,6 +186,20 @@ export class LibraryView extends ItemView {
 	private renderControlsBar(container: HTMLElement) {
 		const wrapper = container.createDiv({ cls: 'controls-wrapper' });
 
+		const categoryOptions: Record<string, string> = {};
+		for (const [key, { label, emoji }] of Object.entries(MEDIA_TYPE_MAP)) {
+			categoryOptions[key] = `${emoji} ${label}`;
+		}
+
+		new DropdownComponent(wrapper)
+			.addOptions(categoryOptions)
+			.setValue(this.state.category)
+			.onChange(async (value) => {
+				this.state.category = value as MediaType;
+				this.app.workspace.requestSaveLayout();
+				await this.updateContent();
+			});
+
 		new SearchComponent(wrapper)
 			.setPlaceholder('Search title or tags...')
 			.setValue(this.state.searchQuery)
@@ -183,20 +223,6 @@ export class LibraryView extends ItemView {
 				await this.updateContent();
 			});
 
-		const categoryOptions: Record<string, string> = {};
-		for (const [key, { label, emoji }] of Object.entries(MEDIA_TYPE_MAP)) {
-			categoryOptions[key] = `${emoji} ${label}`;
-		}
-
-		new DropdownComponent(wrapper)
-			.addOptions(categoryOptions)
-			.setValue(this.state.category)
-			.onChange(async (value) => {
-				this.state.category = value as MediaType;
-				this.app.workspace.requestSaveLayout();
-				await this.updateContent();
-			});
-
 		const sortOptions: Record<string, string> = {};
 		for (const [key, { label, emoji }] of Object.entries(SORT_OPTION_MAP)) {
 			sortOptions[key] = `${emoji} ${label}`;
@@ -214,17 +240,39 @@ export class LibraryView extends ItemView {
 
 	private async updateContent() {
 		this.gridContainer.empty();
+		this.loadedCount = 0;
 
-		const cards = await this.libraryService.getShelfCards(
+		this.sentinel.removeClass('is-hidden');
+
+		this.allCards = await this.libraryService.getShelfCards(
 			this.state.category,
 			this.state.sortBy,
 			this.state.statusFilter,
 			this.state.searchQuery,
 		);
 
-		for (const card of cards) {
-			this.createCard(this.gridContainer, card);
+		this.loadMoreCards();
+	}
+
+	private loadMoreCards() {
+		if (this.loadedCount >= this.allCards.length) {
+			this.sentinel.addClass('is-hidden');
+			return;
 		}
+
+		const nextCount = Math.min(
+			this.loadedCount + this.BATCH_SIZE,
+			this.allCards.length,
+		);
+
+		for (let i = this.loadedCount; i < nextCount; i++) {
+			const card = this.allCards[i];
+			if (card) {
+				this.createCard(this.gridContainer, card);
+			}
+		}
+
+		this.loadedCount = nextCount;
 	}
 
 	private createCard(container: HTMLElement, cardModel: ShelfCardModel): void {
@@ -280,5 +328,10 @@ export class LibraryView extends ItemView {
 		await this.app.workspace.openLinkText(path, '', true);
 	}
 
-	public async onClose() {}
+	public async onClose() {
+		if (this.observer) {
+			this.observer.disconnect();
+			this.observer = null;
+		}
+	}
 }
