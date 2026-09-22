@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="#"><img src="https://img.shields.io/badge/Obsidian-Plugin-7A3EE8.svg?logo=obsidian" alt="Obsidian Downloads" /></a>
-  <a href="#"><img src="https://img.shields.io/github/release/YOUR_USERNAME/obsidian-shelf.svg" alt="GitHub release" /></a>
+  <a href="#"><img src="https://img.shields.io/github/release/GhOsTiK56/obsidian-shelf.svg" alt="GitHub release" /></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
 </p>
 
@@ -74,7 +74,7 @@ The plugin has a number of settings for quick access to your library and posters
 
 1. Download the latest release from the section [Releases](https://www.google.com/search?q=https://github.com/YOUR_USERNAME/obsidian-shelf/releases&utm_source=gemini).
 2. Unzip the archive to the `.obsidian/plugins/obsidian-shelf` folder inside your vault.
-*(Make sure that the folder contains the `main' files.js`, `manifest.json` and `styles.css')*.
+*(Make sure that the folder contains the `main' files.js`, `manifest.json` and `styles.css`)*.
 3. Restart Obsidian.
 4. Go to **Settings** > **Community plugins**, disable Safe mode and enable **Obsidian Shelf**.
 
@@ -101,8 +101,7 @@ npm run build
 
 The project is distributed under the [MIT License](https://www.google.com/search?q=LICENSE&utm_source=gemini).
 
-```text
 **What you will need to do before publishing:**
+
 1. Replace all `YOUR_USERNAME` with your real GitHub username.
 2. In the blocks `> 🖼️ **Screenshot ...**` delete the hint text and uncomment/insert the markdown link to the uploaded images. I recommend creating a folder named `assets` or `images` at the root of the repository, placing the images there, and referencing them as `![Main View](images/main-view.png)`.
-```
