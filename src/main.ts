@@ -40,9 +40,6 @@ export default class ObsidianShelf extends Plugin {
 			LIBRARY_VIEW,
 			(leaf) => new LibraryView(leaf, libraryService),
 		);
-
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Obsidian shelf status bar text');
 	}
 
 	public async addRibbon() {
