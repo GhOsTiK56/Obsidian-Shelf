@@ -8,6 +8,7 @@ import {
 	WorkspaceLeaf,
 } from 'obsidian';
 import {
+	GENRES,
 	MEDIA_TYPE_MAP,
 	MediaType,
 	SORT_OPTION_MAP,
@@ -24,6 +25,7 @@ interface LibraryViewState {
 	sortBy: SortOption;
 	statusFilter: Status | 'all';
 	searchQuery: string;
+	genreFilters: string[];
 }
 
 export class LibraryView extends ItemView {
@@ -38,7 +40,14 @@ export class LibraryView extends ItemView {
 		sortBy: SortOption.TAGS_YEAR,
 		statusFilter: 'all',
 		searchQuery: '',
+		genreFilters: [],
 	};
+
+	private genreFilterRoot: HTMLElement | null = null;
+	private genreFilterMenu: HTMLElement | null = null;
+	private genreFilterButton: HTMLButtonElement | null = null;
+	private readonly genreFilterCheckboxes = new Map<string, HTMLInputElement>();
+	private hasRegisteredGenreOutsideClick = false;
 
 	private allCards: ShelfCardModel[] = [];
 	private loadedCount: number = 0;
@@ -146,6 +155,7 @@ export class LibraryView extends ItemView {
 			sortBy: this.state.sortBy,
 			statusFilter: this.state.statusFilter,
 			searchQuery: this.state.searchQuery,
+			genreFilters: [...this.state.genreFilters],
 		};
 	}
 
@@ -174,7 +184,20 @@ export class LibraryView extends ItemView {
 			if (typeof savedState.searchQuery === 'string') {
 				this.state.searchQuery = savedState.searchQuery;
 			}
+
+			if (Array.isArray(savedState.genreFilters)) {
+				const savedGenres = new Set(
+					savedState.genreFilters.filter(
+						(genre): genre is string => typeof genre === 'string',
+					),
+				);
+				this.state.genreFilters = GENRES.filter((genre) =>
+					savedGenres.has(genre),
+				);
+			}
 		}
+
+		this.syncGenreFilterControls();
 
 		await super.setState(state, result);
 
@@ -223,6 +246,8 @@ export class LibraryView extends ItemView {
 				await this.updateContent();
 			});
 
+		this.renderGenreFilter(wrapper);
+
 		const sortOptions: Record<string, string> = {};
 		for (const [key, { label, emoji }] of Object.entries(SORT_OPTION_MAP)) {
 			sortOptions[key] = `${emoji} ${label}`;
@@ -238,6 +263,140 @@ export class LibraryView extends ItemView {
 			});
 	}
 
+	/** Creates a small checkbox dropdown without relying on an undocumented API. */
+	private renderGenreFilter(container: HTMLElement): void {
+		const dropdown = container.createDiv({ cls: 'genre-filter' });
+
+		const button = dropdown.createEl('button', {
+			cls: 'genre-filter__button',
+			text: this.getGenreFilterButtonText(),
+			attr: {
+				type: 'button',
+				'aria-haspopup': 'true',
+				'aria-expanded': 'false',
+				'aria-label': 'Filter by genre',
+			},
+		});
+
+		const menu = dropdown.createDiv({ cls: 'genre-filter__menu' });
+		menu.setAttribute('role', 'group');
+		menu.setAttribute('aria-label', 'Filter by genre');
+
+		const menuHeader = menu.createDiv({ cls: 'genre-filter__header' });
+
+		const heading = menuHeader.createSpan({ text: 'Filter by genre' });
+		heading.addClass('genre-filter__heading');
+
+		const clearButton = menuHeader.createEl('button', {
+			text: 'Clear',
+			cls: 'genre-filter__clear',
+			attr: { type: 'button' },
+		});
+
+		const options = menu.createDiv({ cls: 'genre-filter__options' });
+
+		this.genreFilterCheckboxes.clear();
+
+		for (const genre of GENRES) {
+			const option = options.createEl('label', {
+				cls: 'genre-filter__option',
+			});
+
+			const checkbox = option.createEl('input', {
+				attr: { type: 'checkbox' },
+			});
+			checkbox.checked = this.state.genreFilters.includes(genre);
+			checkbox.addClass('genre-filter__checkbox');
+			this.genreFilterCheckboxes.set(genre, checkbox);
+
+			option.createSpan({ text: genre });
+
+			this.registerDomEvent(checkbox, 'change', () => {
+				if (checkbox.checked) {
+					if (!this.state.genreFilters.includes(genre)) {
+						this.state.genreFilters.push(genre);
+					}
+				} else {
+					this.state.genreFilters = this.state.genreFilters.filter(
+						(selectedGenre) => selectedGenre !== genre,
+					);
+				}
+
+				this.updateGenreFilterButtonText();
+				this.app.workspace.requestSaveLayout();
+				void this.updateContent();
+			});
+		}
+
+		this.registerDomEvent(clearButton, 'click', (event) => {
+			event.preventDefault();
+			this.state.genreFilters = [];
+			for (const checkbox of this.genreFilterCheckboxes.values()) {
+				checkbox.checked = false;
+			}
+			this.updateGenreFilterButtonText();
+			this.app.workspace.requestSaveLayout();
+			void this.updateContent();
+		});
+
+		this.registerDomEvent(button, 'click', () => {
+			this.setGenreMenuOpen(!menu.hasClass('is-open'));
+		});
+
+		this.genreFilterRoot = dropdown;
+		this.genreFilterMenu = menu;
+		this.genreFilterButton = button;
+		this.registerGenreOutsideClickHandler();
+	}
+
+	private registerGenreOutsideClickHandler(): void {
+		if (this.hasRegisteredGenreOutsideClick) {
+			return;
+		}
+
+		this.hasRegisteredGenreOutsideClick = true;
+		this.registerDomEvent(this.contentEl.ownerDocument, 'pointerdown', (event) => {
+			if (
+				this.genreFilterRoot &&
+				!this.genreFilterRoot.contains(event.target as Node)
+			) {
+				this.setGenreMenuOpen(false);
+			}
+		});
+	}
+
+	private setGenreMenuOpen(isOpen: boolean): void {
+		if (!this.genreFilterMenu || !this.genreFilterButton) {
+			return;
+		}
+
+		if (isOpen) {
+			this.genreFilterMenu.addClass('is-open');
+		} else {
+			this.genreFilterMenu.removeClass('is-open');
+		}
+		this.genreFilterButton.setAttribute('aria-expanded', String(isOpen));
+	}
+
+	private getGenreFilterButtonText(): string {
+		const count = this.state.genreFilters.length;
+		return count > 0 ? `🏷️ Genres (${count})` : '🏷️ Genres';
+	}
+
+	private updateGenreFilterButtonText(): void {
+		if (this.genreFilterButton) {
+			this.genreFilterButton.textContent = this.getGenreFilterButtonText();
+		}
+	}
+
+	private syncGenreFilterControls(): void {
+		const selectedGenres = new Set(this.state.genreFilters);
+		for (const [genre, checkbox] of this.genreFilterCheckboxes) {
+			checkbox.checked = selectedGenres.has(genre);
+		}
+		this.updateGenreFilterButtonText();
+	}
+
 	private async updateContent() {
 		this.gridContainer.empty();
 		this.loadedCount = 0;
@@ -249,6 +408,7 @@ export class LibraryView extends ItemView {
 			this.state.sortBy,
 			this.state.statusFilter,
 			this.state.searchQuery,
+			this.state.genreFilters,
 		);
 
 		this.loadMoreCards();
@@ -329,6 +489,8 @@ export class LibraryView extends ItemView {
 	}
 
 	public async onClose() {
+		this.setGenreMenuOpen(false);
+
 		if (this.observer) {
 			this.observer.disconnect();
 			this.observer = null;

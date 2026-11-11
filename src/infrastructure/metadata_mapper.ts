@@ -14,6 +14,7 @@ export class MetadataMapper {
 			type: this.parseType(frontmatter?.['type']),
 			rating: this.parseNumber(frontmatter?.['rating']),
 			year: this.parseNumber(frontmatter?.['year']),
+			genres: this.parseStringArray(frontmatter?.['genres']),
 			tags: this.parseStringArray(frontmatter?.['tags']),
 			path: file.path,
 		};

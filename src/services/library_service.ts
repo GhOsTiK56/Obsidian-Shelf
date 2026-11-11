@@ -27,16 +27,36 @@ export class LibraryService {
 		sortBy: SortOption,
 		statusFilter: Status | 'all' = 'all',
 		searchQuery: string = '',
+		genreFilters: readonly string[] = [],
 	): Promise<ShelfCardModel[]> {
 		const folderPath = this.getFolderByCategory(category);
 		const items = await this.getAllMediaItems(folderPath);
 
 		const cards: ShelfCardModel[] = [];
 		const normalizedQuery = searchQuery.toLowerCase().trim();
+		const normalizedGenreFilters = new Set(
+			genreFilters
+				.map((genre) => genre.trim().toLowerCase())
+				.filter((genre) => genre.length > 0),
+		);
 
 		for (const item of items) {
 			if (statusFilter !== 'all' && item.status !== statusFilter) {
 				continue;
+			}
+
+			// Match at least one selected genre (OR logic).
+			// With no selected genres, this filter is inactive and items without
+			// a `genres` property are included as well.
+			if (normalizedGenreFilters.size > 0) {
+				const matchesGenre =
+					item.genres?.some((genre) =>
+						normalizedGenreFilters.has(genre.trim().toLowerCase()),
+					) ?? false;
+
+				if (!matchesGenre) {
+					continue;
+				}
 			}
 
 			if (normalizedQuery) {
@@ -51,7 +71,7 @@ export class LibraryService {
 				}
 			}
 
-			// 3. Резолв постера
+			// Resolve the poster for this item.
 			const posterFile = this.posterResolver.resolve(item);
 			if (posterFile) {
 				cards.push({
