@@ -37,7 +37,7 @@ export class LibraryView extends ItemView {
 
 	private state: LibraryViewState = {
 		category: MediaType.TV_SERIES,
-		sortBy: SortOption.TAGS_YEAR,
+		sortBy: SortOption.TAGS_TITLE,
 		statusFilter: 'all',
 		searchQuery: '',
 		genreFilters: [],
@@ -170,7 +170,11 @@ export class LibraryView extends ItemView {
 				this.state.category = savedState.category as MediaType;
 			}
 
-			if (Object.values(SortOption).includes(savedState.sortBy as SortOption)) {
+			if (savedState.sortBy === 'tags_year') {
+				this.state.sortBy = SortOption.TAGS_TITLE;
+			} else if (
+				Object.values(SortOption).includes(savedState.sortBy as SortOption)
+			) {
 				this.state.sortBy = savedState.sortBy as SortOption;
 			}
 
@@ -355,14 +359,18 @@ export class LibraryView extends ItemView {
 		}
 
 		this.hasRegisteredGenreOutsideClick = true;
-		this.registerDomEvent(this.contentEl.ownerDocument, 'pointerdown', (event) => {
-			if (
-				this.genreFilterRoot &&
-				!this.genreFilterRoot.contains(event.target as Node)
-			) {
-				this.setGenreMenuOpen(false);
-			}
-		});
+		this.registerDomEvent(
+			this.contentEl.ownerDocument,
+			'pointerdown',
+			(event) => {
+				if (
+					this.genreFilterRoot &&
+					!this.genreFilterRoot.contains(event.target as Node)
+				) {
+					this.setGenreMenuOpen(false);
+				}
+			},
+		);
 	}
 
 	private setGenreMenuOpen(isOpen: boolean): void {
